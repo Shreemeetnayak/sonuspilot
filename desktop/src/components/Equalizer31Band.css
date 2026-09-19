@@ -1,0 +1,232 @@
+/* ── 31-Band EQ ──────────────────────────────────────────────────── */
+.eq-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.eq-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.eq-panel__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eq-panel__profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.eq-panel__profile-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.eq-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Mode pills */
+.mode-pills {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-elevated);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.mode-pill {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  border: none;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.mode-pill:hover {
+  color: var(--text-secondary);
+}
+
+.mode-pill--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* EQ visualizer + sliders */
+.eq-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 20px 12px;
+}
+
+/* Frequency response curve canvas */
+.eq-curve {
+  height: 80px;
+  width: 100%;
+  flex-shrink: 0;
+  margin: 12px 0 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+/* The 31 band sliders */
+.eq-bands {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3px;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.eq-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+.eq-band__slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Vertical range input */
+.eq-band__slider {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  width: 16px;
+  height: 100%;
+  cursor: pointer;
+  accent-color: var(--accent);
+  background: transparent;
+}
+
+.eq-band__slider::-webkit-slider-runnable-track {
+  background: var(--bg-hover);
+  border-radius: 2px;
+  width: 2px;
+}
+
+.eq-band__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: grab;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+
+.eq-band__slider:hover::-webkit-slider-thumb {
+  background: #818cf8;
+  transform: scale(1.15);
+}
+
+.eq-band__slider:active::-webkit-slider-thumb {
+  cursor: grabbing;
+}
+
+.eq-band__gain {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.eq-band__gain--boosted  { color: var(--accent); }
+.eq-band__gain--cut      { color: #f87171; }
+
+.eq-band__freq {
+  font-size: 8px;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+
+/* 0 dB center line */
+.eq-center-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border-subtle);
+  pointer-events: none;
+}
+
+/* Preset strip */
+.preset-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.preset-strip::-webkit-scrollbar { height: 2px; }
+
+.preset-chip {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+  flex-shrink: 0;
+}
+
+.preset-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.preset-chip--active {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  color: #a5b4fc;
+}

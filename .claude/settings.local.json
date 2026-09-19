@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat: complete Phase 1 UI shell with NowPlaying, Equalizer31Band, and DeviceSelector components *)",
+      "Bash(git init *)",
+      "Bash(git commit -m 'feat: initial commit with UI shell structure *)"
+    ]
+  }
+}

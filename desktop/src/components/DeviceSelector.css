@@ -1,0 +1,73 @@
+/* ── Device Selector ─────────────────────────────────────────────── */
+.device-selector {
+  padding: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.device-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+  margin-bottom: 8px;
+}
+
+.device-row:hover {
+  border-color: var(--border);
+  background: var(--bg-hover);
+}
+
+.device-row__icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.device-row__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.device-row__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-row__sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-row__action {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.device-row--unmapped .device-row__name {
+  color: var(--warning);
+}
+
+.headphone-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

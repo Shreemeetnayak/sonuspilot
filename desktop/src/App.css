@@ -1,0 +1,181 @@
+/* ── Reset & Tokens ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Colour palette */
+  --bg-base:       #0e0e10;
+  --bg-surface:    #18181b;
+  --bg-elevated:   #27272a;
+  --bg-hover:      #3f3f46;
+  --border:        #3f3f46;
+  --border-subtle: #27272a;
+
+  --accent:        #6366f1;   /* indigo-500 */
+  --accent-dim:    #4338ca;
+  --accent-glow:   rgba(99, 102, 241, 0.25);
+
+  --text-primary:   #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted:     #71717a;
+
+  --success:  #22c55e;
+  --warning:  #f59e0b;
+  --error:    #ef4444;
+  --neutral:  #52525b;
+
+  /* Typography */
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Transitions */
+  --t-fast:   120ms ease;
+  --t-normal: 200ms ease;
+
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── App Layout ──────────────────────────────────────────────────── */
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  background: var(--bg-base);
+}
+
+.app__main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  overflow: hidden;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── Title Bar ───────────────────────────────────────────────────── */
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 40px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  -webkit-app-region: drag;
+}
+
+.titlebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.titlebar__brand svg {
+  color: var(--accent);
+}
+
+.titlebar__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+/* ── Left Panel (Now Playing + Device) ─────────────────────────── */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+}
+
+/* ── Right Panel (EQ) ────────────────────────────────────────────── */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  padding: 16px;
+}
+
+.card__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* ── Status Bar ──────────────────────────────────────────────────── */
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 28px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.statusbar__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.statusbar__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--neutral);
+  flex-shrink: 0;
+}
+.statusbar__dot--online  { background: var(--success); }
+.statusbar__dot--offline { background: var(--error); }
+.statusbar__dot--loading {
+  background: var(--warning);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
