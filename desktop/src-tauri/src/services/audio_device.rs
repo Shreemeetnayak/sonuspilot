@@ -1,15 +1,21 @@
+use tauri::command;
 use windows::Win32::Media::Audio::{
     eConsole,
     eRender,
     IMMDeviceEnumerator,
-    MMDeviceEnumerator,
 };
+use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_ALL};
+use windows::core::Interface;
 
+#[command]
 pub fn get_default_output_device() -> Result<String, String> {
     unsafe {
-        let enumerator =
-            MMDeviceEnumerator::new()
-                .map_err(|e| e.to_string())?;
+        // Create MMDeviceEnumerator via COM
+        let enumerator: IMMDeviceEnumerator = CoCreateInstance(
+            &windows::Win32::Media::Audio::MMDeviceEnumerator,
+            None,
+            CLSCTX_ALL,
+        ).map_err(|e| e.to_string())?;
 
         let device = enumerator
             .GetDefaultAudioEndpoint(eRender, eConsole)

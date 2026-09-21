@@ -1,4 +1,7 @@
 {
+  "env": {
+    "ENABLE_TOOL_SEARCH": "true"
+  },
   "permissions": {
     "allow": [
       "WebSearch",
@@ -7,7 +10,66 @@
       "Bash(git add *)",
       "Bash(git commit -m 'feat: complete Phase 1 UI shell with NowPlaying, Equalizer31Band, and DeviceSelector components *)",
       "Bash(git init *)",
-      "Bash(git commit -m 'feat: initial commit with UI shell structure *)"
+      "Bash(git commit -m 'feat: initial commit with UI shell structure *)",
+      "Bash(git config *)",
+      "Bash(cargo check *)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File setup-autostart.ps1)",
+      "Bash(mkdir -p \"/c/Users/KIIT0001/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup\" 2>/dev/null; echo \"Directory exists or created\")",
+      "Bash(claude plugin *)",
+      "Bash(npm install *)",
+      "Bash(gh search *)",
+      "Bash(npm search *)",
+      "Bash(pip install *)",
+      "Bash(ls -la ~/.claude/plugins/data/)",
+      "Bash(mkdir -p ~/.claude/plugins/cache/local)",
+      "Bash(mkdir -p ~/.claude/plugins/cache/local/task-observer ~/.claude/plugins/cache/local/headroom ~/.claude/plugins/cache/local/claude-code-setup)",
+      "Bash(mkdir -p /c/Users/KIIT0001/.claude/plugins/cache/local/task-observer /c/Users/KIIT0001/.claude/plugins/cache/local/headroom /c/Users/KIIT0001/.claude/plugins/cache/local/claude-code-setup)",
+      "Bash(tasklist)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s http://localhost:8080/health)",
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(omniroute config *)",
+      "Bash(cat ~/.omniroute/.env 2>/dev/null | grep -E \"API_KEY|OMNIROUTE\" | head -5)",
+      "Bash(omniroute --help)",
+      "Bash(/plugin install *)",
+      "Bash(ls -la \"C:\\\\Users\\\\KIIT0001\\\\.claude\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\")",
+      "Bash(xcopy \"C:\\\\Users\\\\KIIT0001\\\\Downloads\\\\claude-plugins-official-main\\\\claude-plugins-official-main\\\\plugins\\\\claude-code-setup\" \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\" /E /I /H)",
+      "Bash(mv \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\\\\*\" \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\\" && rmdir \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\")",
+      "Bash(mv \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\"/* \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\"/)",
+      "Bash(rmdir \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\")",
+      "Bash(mv \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\\\\.claude-plugin\" \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\\" && rmdir \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\")",
+      "Bash(powershell -Command \"Move-Item 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup\\\\.claude-plugin' 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0'; Remove-Item 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\claude-code-setup' -Recurse -Force\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\skills\")",
+      "Bash(cp -r \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\skills\"/* \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\skills\\\\\")",
+      "Bash(cp -r \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\skills\\\\claude-automation-recommender\" \"C:\\\\Users\\\\KIIT0001\\\\.claude\\\\skills\\\\\")",
+      "Bash(powershell -Command \"New-Item -ItemType Directory -Path 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\skills' -Force; Copy-Item 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\plugins\\\\cache\\\\anthropic\\\\claude-code-setup\\\\1.0.0\\\\skills\\\\claude-automation-recommender' 'C:\\\\Users\\\\KIIT0001\\\\.claude\\\\skills\\\\' -Recurse -Force\")",
+      "Bash(env)",
+      "Bash(uv --version)",
+      "Bash(uv tool *)",
+      "Bash(headroom --version)",
+      "Bash(headroom doctor *)",
+      "Bash(headroom proxy *)",
+      "Bash(findstr 8787)",
+      "Bash(findstr python *)",
+      "Bash(findstr 20128)",
+      "Bash(curl -s http://127.0.0.1:20128/livez)",
+      "Bash(grep -E \"\\(error|finished|Checking|Compiling.*$\\)\")",
+      "mcp__serena__initial_instructions"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/KIIT0001/.local/bin/headroom.EXE wrap selfheal --marker headroom-wrap-selfheal",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

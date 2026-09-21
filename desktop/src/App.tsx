@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { invoke, listen } from "@tauri-apps/api/core";
 import "./App.css";
 
 import NowPlaying, { type NowPlayingData } from "./components/NowPlaying";
@@ -9,33 +10,13 @@ import DeviceSelector, {
 import Equalizer31Band, { type EQMode } from "./components/Equalizer31Band";
 import StatusBar, { type ServiceStatus } from "./components/StatusBar";
 
-// ── Mock data for Phase 1 UI shell ────────────────────────────────────
-// In Phase 2 this will be replaced by real Tauri command invocations
-// from the Rust GSMTC watcher and WASAPI device enumerator.
-
-const MOCK_TRACK: NowPlayingData = {
-  title: "Raining Blood",
-  artist: "Slayer",
-  album: "Reign in Blood",
-  artworkUrl: undefined,
-  status: "playing",
-  subgenres: [
-    { name: "Thrash Metal", weight: 0.70 },
-    { name: "Speed Metal",  weight: 0.20 },
-    { name: "Heavy Metal",  weight: 0.10 },
-  ],
-};
-
-const MOCK_DEVICE: OutputDevice = {
-  id: "mock-device-001",
-  name: "Realtek USB Audio",
-};
-
-const MOCK_HEADPHONE: HeadphoneProfile = {
-  id: "mock-hp-001",
-  brand: "Simgot",
-  model: "EW300",
-};
+// ── Type for Rust TrackInfo ─────────────────────────────────────────────
+interface RustTrackInfo {
+  title: string;
+  artist: string;
+  album: string;
+  status: string;
+}
 
 // ── TitleBar ──────────────────────────────────────────────────────────
 function TitleBar() {
@@ -70,18 +51,16 @@ export default function App() {
   // EQ mode
   const [eqMode, setEqMode] = useState<EQMode>("auto");
 
-  // Simulate a playing track (Phase 2: replaced by GSMTC Tauri event)
-  const [currentTrack] = useState<NowPlayingData | null>(MOCK_TRACK);
+  // Current track from GSMTC
+  const [currentTrack, setCurrentTrack] = useState<NowPlayingData | null>(null);
 
-  // Output device + headphone (Phase 2: replaced by WASAPI enumeration)
-  const [outputDevice] = useState<OutputDevice | null>(MOCK_DEVICE);
-  const [headphone, setHeadphone] = useState<HeadphoneProfile | null>(
-    MOCK_HEADPHONE
-  );
+  // Output device + headphone
+  const [outputDevice, setOutputDevice] = useState<OutputDevice | null>(null);
+  const [headphone, setHeadphone] = useState<HeadphoneProfile | null>(null);
 
-  // Service statuses (Phase 3: driven by API client health checks)
-  const [cloudStatus] = useState<ServiceStatus>("loading");
-  const [eqStatus]    = useState<ServiceStatus>("online");
+  // Service statuses
+  const [cloudStatus, setCloudStatus] = useState<ServiceStatus>("loading");
+  const [eqStatus, setEqStatus] = useState<ServiceStatus>("online");
 
   // Active profile name shown in EQ header
   const activeProfile =
@@ -89,10 +68,39 @@ export default function App() {
       ? currentTrack.subgenres.map((s) => s.name).join(" / ")
       : "No profile";
 
+  // Initialize: get current track and device on mount
+  useEffect(() => {
+    async function init() {
+      try {
+        // Get current track from GSMTC
+        const track = await invoke<OptionRustTrackInfo>("get_current_track");
+        if (track) {
+          setCurrentTrack(convertRustTrack(track));
+        }
+
+        // Get default output device
+        const deviceId = await invoke<string>("get_default_output_device");
+        setOutputDevice({ id: deviceId, name: deviceId });
+      } catch (e) {
+        console.error("Init error:", e);
+      }
+    }
+    init();
+
+    // Listen for track-changed events from Rust
+    const unlisten = listen<RustTrackInfo>("track-changed", (event) => {
+      setCurrentTrack(convertRustTrack(event.payload));
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
   function handleChangeHeadphone() {
     // Phase 2: open a headphone-picker modal / Tauri dialog
     // For now, toggle between mapped and unmapped to demonstrate the UI states
-    setHeadphone((prev) => (prev ? null : MOCK_HEADPHONE));
+    setHeadphone((prev) => (prev ? null : { id: "mock-hp-001", brand: "Simgot", model: "EW300" }));
   }
 
   return (
@@ -133,4 +141,24 @@ export default function App() {
       />
     </div>
   );
+}
+
+// Helper to convert Rust TrackInfo to NowPlayingData
+function convertRustTrack(track: RustTrackInfo): NowPlayingData {
+  return {
+    title: track.title,
+    artist: track.artist,
+    album: track.album,
+    artworkUrl: undefined,
+    status: track.status as "playing" | "paused" | "stopped",
+    subgenres: [], // Will be populated from cloud in Phase 3
+  };
+}
+
+// Tauri invoke return type for optional
+interface OptionRustTrackInfo {
+  title: string;
+  artist: string;
+  album: string;
+  status: string;
 }
