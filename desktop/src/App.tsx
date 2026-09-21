@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { invoke, listen } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 import NowPlaying, { type NowPlayingData } from "./components/NowPlaying";
@@ -59,8 +60,8 @@ export default function App() {
   const [headphone, setHeadphone] = useState<HeadphoneProfile | null>(null);
 
   // Service statuses
-  const [cloudStatus, setCloudStatus] = useState<ServiceStatus>("loading");
-  const [eqStatus, setEqStatus] = useState<ServiceStatus>("online");
+  const [cloudStatus] = useState<ServiceStatus>("loading");
+  const [eqStatus] = useState<ServiceStatus>("online");
 
   // Active profile name shown in EQ header
   const activeProfile =

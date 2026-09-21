@@ -15,20 +15,81 @@ const BAND_LABELS: string[] = [
   "2k", "2.5k", "3.15k", "4k", "5k", "6.3k", "8k", "10k", "12.5k", "16k", "20k",
 ];
 
-export type EQMode = "auto" | "manual" | "preset" | "neutral";
+export type EQMode = "auto" | "manual" | "preset";
 
-const PRESETS = [
+const BUILTIN_PRESETS = [
   "Dream Pop", "EDM", "Thrash Metal", "Jazz", "Classical",
   "Hip-Hop", "Acoustic", "Podcast",
 ] as const;
 
-export type PresetName = (typeof PRESETS)[number];
+export type BuiltinPresetName = (typeof BUILTIN_PRESETS)[number];
+
+// User-created presets (stored in localStorage)
+export interface UserPreset {
+  name: string;
+  gains: number[];
+  createdAt: number;
+}
+
+const USER_PRESETS_KEY = "sonuspilot-user-presets";
+
+function loadUserPresets(): UserPreset[] {
+  try {
+    const stored = localStorage.getItem(USER_PRESETS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUserPresets(presets: UserPreset[]): void {
+  localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(presets));
+}
+
+// ── Taste Preference Offsets (user-clickable checkboxes) ───────────────
+export interface TastePreferences {
+  bassBoost: boolean;      // +2dB @ 40-160Hz
+  vocalClarity: boolean;   // +1.5dB @ 1k-4kHz
+  trebleAir: boolean;      // +1.5dB @ 8k-16kHz
+  warmth: boolean;         // +1dB @ 200-500Hz
+  presence: boolean;       // +1dB @ 3k-6kHz
+  subBass: boolean;        // +2dB @ 20-40Hz
+}
+
+const DEFAULT_TASTE: TastePreferences = {
+  bassBoost: false,
+  vocalClarity: false,
+  trebleAir: false,
+  warmth: false,
+  presence: false,
+  subBass: false,
+};
+
+// Gain offsets applied per band when taste is enabled
+const TASTE_OFFSETS: Record<keyof TastePreferences, number[]> = {
+  bassBoost:      [0, 0, 2, 2, 2, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  vocalClarity:   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1, 1.5, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  trebleAir:      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1, 1.5, 1.5, 1, 0.5, 0, 0],
+  warmth:         [0, 0, 0, 0, 0, 0, 0.5, 1, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  presence:       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1, 1, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  subBass:        [2, 2, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+};
+
+// Human-readable labels for taste checkboxes
+export const TASTE_LABELS: Record<keyof TastePreferences, string> = {
+  bassBoost: "Bass Boost (+2dB @ 40–160 Hz)",
+  vocalClarity: "Vocal Clarity (+1.5dB @ 1–4 kHz)",
+  trebleAir: "Treble Air (+1.5dB @ 8–16 kHz)",
+  warmth: "Warmth (+1dB @ 200–500 Hz)",
+  presence: "Presence (+1dB @ 3–6 kHz)",
+  subBass: "Sub-Bass (+2dB @ 20–40 Hz)",
+};
 
 // ── Neutral (flat) gains ──────────────────────────────────────────────
 const NEUTRAL_GAINS: number[] = new Array(31).fill(0);
 
 // ── Demo preset shapes (illustrative, not authoritative) ──────────────
-const PRESET_GAINS: Record<PresetName, number[]> = {
+const BUILTIN_PRESET_GAINS: Record<BuiltinPresetName, number[]> = {
   "Dream Pop": [
     0, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5, -0.5, -0.5,
     -1, -1, -0.5, 0, 0, 0.5, 1, 1, 1.5, 1.5,
@@ -168,6 +229,23 @@ export default function Equalizer31Band({
 }: Equalizer31BandProps) {
   const [gains, setGains] = useState<number[]>(NEUTRAL_GAINS);
   const [activePreset, setActivePreset] = useState<PresetName | null>(null);
+  const [taste, setTaste] = useState<TastePreferences>(DEFAULT_TASTE);
+
+  // Compute gains with taste offsets applied
+  const computeGainsWithTaste = useCallback((baseGains: number[]): number[] => {
+    return baseGains.map((gain, i) => {
+      let offset = 0;
+      (Object.keys(taste) as Array<keyof TastePreferences>).forEach((key) => {
+        if (taste[key]) {
+          offset += TASTE_OFFSETS[key][i];
+        }
+      });
+      return Math.max(-12, Math.min(12, gain + offset)); // clamp to ±12dB
+    });
+  }, [taste]);
+
+  // Effective gains shown to user (base + taste)
+  const effectiveGains = computeGainsWithTaste(gains);
 
   // Sync external gains (from auto-mode cloud profile)
   const prevExternal = useRef<number[] | undefined>(undefined);
@@ -190,18 +268,30 @@ export default function Equalizer31Band({
     }
   }, [mode]);
 
+  const handleTasteToggle = useCallback((key: keyof TastePreferences) => {
+    setTaste((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
   const handleBandChange = useCallback(
     (index: number, value: number) => {
       if (mode === "auto" || mode === "neutral") return; // read-only in those modes
+      // Convert effective value back to base value by removing taste offset
+      let baseValue = value;
+      (Object.keys(taste) as Array<keyof TastePreferences>).forEach((key) => {
+        if (taste[key]) {
+          baseValue -= TASTE_OFFSETS[key][index];
+        }
+      });
+      baseValue = Math.max(-12, Math.min(12, baseValue));
       setGains((prev) => {
         const next = [...prev];
-        next[index] = value;
+        next[index] = baseValue;
         onGainsChange?.(next);
         return next;
       });
       setActivePreset(null);
     },
-    [mode, onGainsChange]
+    [mode, onGainsChange, taste]
   );
 
   const handlePresetClick = useCallback(
@@ -248,44 +338,64 @@ export default function Equalizer31Band({
             </button>
           ))}
         </div>
+
+        {/* Taste preference checkboxes */}
+        <div className="taste-preferences" role="group" aria-label="Personal taste preferences">
+          {(Object.entries(taste) as Array<[keyof TastePreferences, boolean]>).map(([key, enabled]) => (
+            <label key={key} className="taste-checkbox">
+              <input
+                type="checkbox"
+                checked={enabled}
+                onChange={() => handleTasteToggle(key)}
+              />
+              <span className="taste-checkbox__label">
+                {TASTE_LABELS[key]}
+              </span>
+              {enabled && <span className="taste-checkbox__active-indicator" />}
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* EQ body */}
       <div className="eq-body">
         {/* Frequency response curve */}
-        <EQCurve gains={gains} />
+        <EQCurve gains={effectiveGains} />
 
         {/* Band sliders */}
         <div className="eq-bands" role="group" aria-label="EQ bands">
-          {gains.map((gain, i) => (
-            <div className="eq-band" key={ISO_BANDS[i]}>
-              {/* Gain readout */}
-              <div className={`eq-band__gain ${gainClass(gain)}`}>
-                {formatGain(gain)}
-              </div>
+          {gains.map((baseGain, i) => {
+            const effectiveGain = effectiveGains[i];
+            return (
+              <div className="eq-band" key={ISO_BANDS[i]}>
+                {/* Gain readout (shows effective = base + taste) */}
+                <div className={`eq-band__gain ${gainClass(effectiveGain)}`}>
+                  {formatGain(effectiveGain)}
+                </div>
 
-              {/* Slider */}
-              <div className="eq-band__slider-wrap">
-                <div className="eq-center-line" />
-                <input
-                  className="eq-band__slider"
-                  type="range"
-                  min={-12}
-                  max={12}
-                  step={0.5}
-                  value={gain}
-                  disabled={isReadOnly}
-                  onChange={(e) =>
-                    handleBandChange(i, parseFloat(e.target.value))
-                  }
-                  aria-label={`${BAND_LABELS[i]} Hz, ${formatGain(gain)} dB`}
-                />
-              </div>
+                {/* Slider */}
+                <div className="eq-band__slider-wrap">
+                  <div className="eq-center-line" />
+                  <input
+                    className="eq-band__slider"
+                    type="range"
+                    min={-12}
+                    max={12}
+                    step={0.5}
+                    value={baseGain}
+                    disabled={isReadOnly}
+                    onChange={(e) =>
+                      handleBandChange(i, parseFloat(e.target.value))
+                    }
+                    aria-label={`${BAND_LABELS[i]} Hz, ${formatGain(effectiveGain)} dB`}
+                  />
+                </div>
 
-              {/* Frequency label */}
-              <div className="eq-band__freq">{BAND_LABELS[i]}</div>
-            </div>
-          ))}
+                {/* Frequency label */}
+                <div className="eq-band__freq">{BAND_LABELS[i]}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

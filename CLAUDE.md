@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Language Rule (CRITICAL)
+- **ALWAYS** communicate, explain, and write all responses in **English** at all times.
+
 ## Project Overview
 
 **SonusPilot** is a Windows desktop application that dynamically adapts audio EQ based on the currently playing music's genre/subgenre and the user's headphones/output device. Built with Tauri 2.x (Rust + React 19 + TypeScript).
