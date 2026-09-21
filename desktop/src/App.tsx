@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./App.css";
@@ -10,6 +10,8 @@ import DeviceSelector, {
 } from "./components/DeviceSelector";
 import Equalizer31Band, { type EQMode } from "./components/Equalizer31Band";
 import StatusBar, { type ServiceStatus } from "./components/StatusBar";
+import EQChatAssistant from "./components/EQChatAssistant";
+import { getBestEQForContext, addUserFeedback, type CloudEQProfile, type FeedbackRating } from "./services/cloudEqService";
 
 // ── Type for Rust TrackInfo ─────────────────────────────────────────────
 interface RustTrackInfo {
@@ -69,6 +71,9 @@ export default function App() {
       ? currentTrack.subgenres.map((s) => s.name).join(" / ")
       : "No profile";
 
+  // Cloud EQ profile (fetched/learned)
+  const [cloudProfile, setCloudProfile] = useState<CloudEQProfile | null>(null);
+
   // Initialize: get current track and device on mount
   useEffect(() => {
     async function init() {
@@ -104,6 +109,62 @@ export default function App() {
     setHeadphone((prev) => (prev ? null : { id: "mock-hp-001", brand: "Simgot", model: "EW300" }));
   }
 
+  // Fetch cloud EQ profile when track or headphone changes
+  useEffect(() => {
+    if (headphone?.id && currentTrack) {
+      const genre = currentTrack.subgenres?.[0] || "unknown";
+      const subgenres = currentTrack.subgenres || [];
+      getBestEQForContext(
+        headphone.id,
+        genre,
+        subgenres,
+        "Dream Pop",
+        {
+          bassBoost: false,
+          vocalClarity: false,
+          trebleAir: false,
+          warmth: false,
+          presence: false,
+          subBass: false,
+        }
+      ).then((result) => setCloudProfile(result.profile || null));
+    } else {
+      setCloudProfile(null);
+    }
+  }, [headphone?.id, currentTrack]);
+
+  // Handle natural language feedback from user (ChatGPT-like)
+  const handleFeedback = useCallback(
+    async (rating: FeedbackRating) => {
+      if (!headphone?.id || !currentTrack) return;
+
+      const genre = currentTrack.subgenres?.[0] || "unknown";
+      const subgenres = currentTrack.subgenres || [];
+
+      // Send feedback to cloud service (this updates the learned profile)
+      await addUserFeedback({
+        headphoneId: headphone.id,
+        trackId: `${currentTrack.title}-${currentTrack.artist}`,
+        genre,
+        subgenres,
+        baseGains: cloudProfile?.gains || [],
+        taste: cloudProfile?.tasteOverrides || {
+          bassBoost: false,
+          vocalClarity: false,
+          trebleAir: false,
+          warmth: false,
+          presence: false,
+          subBass: false,
+        },
+        rating,
+      });
+
+      // Re-fetch updated profile
+      getBestEQForContext(headphone.id, genre, subgenres).then(setCloudProfile);
+    },
+    [headphone?.id, currentTrack, cloudProfile?.gains, cloudProfile?.tasteOverrides]
+  );
+
   return (
     <div className="app">
       {/* ── Title bar ── */}
@@ -130,6 +191,11 @@ export default function App() {
             mode={eqMode}
             onModeChange={setEqMode}
             activeProfile={activeProfile}
+            headphoneId={headphone?.id}
+            genre={currentTrack?.subgenres?.[0] || "unknown"}
+            subgenres={currentTrack?.subgenres || []}
+            onFeedback={handleFeedback}
+            externalGains={cloudProfile?.gains}
           />
         </section>
       </main>
@@ -140,6 +206,19 @@ export default function App() {
         eqStatus={eqStatus}
         outputDeviceName={outputDevice?.name}
       />
+
+      {/* ── EQ Chat Assistant (ChatGPT-like) ── */}
+      <section className="eq-chat-assistant">
+        <EQChatAssistant
+          headphoneId={headphone?.id || "unknown"}
+          genre={currentTrack?.subgenres?.[0] || "unknown"}
+          baseGains={cloudProfile?.gains || []}
+          onGainsChange={(gains) => {
+            // Update the Equalizer31Band with learned gains
+            // This is handled automatically through the cloudProfile update
+          }}
+        />
+      </section>
     </div>
   );
 }

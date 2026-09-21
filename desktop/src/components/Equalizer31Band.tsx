@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import "./Equalizer31Band.css";
+import { getBestEQForContext, addUserFeedback, FeedbackRating, type UserFeedback, type TastePreferences } from "../services/cloudEqService";
 
 // ── ISO 266 31-band center frequencies (Hz) ───────────────────────────
 export const ISO_BANDS: number[] = [
@@ -24,26 +25,11 @@ const BUILTIN_PRESETS = [
 
 export type BuiltinPresetName = (typeof BUILTIN_PRESETS)[number];
 
-// User-created presets (stored in localStorage)
+// // User-created presets (stored in localStorage)
 export interface UserPreset {
   name: string;
   gains: number[];
   createdAt: number;
-}
-
-const USER_PRESETS_KEY = "sonuspilot-user-presets";
-
-function loadUserPresets(): UserPreset[] {
-  try {
-    const stored = localStorage.getItem(USER_PRESETS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUserPresets(presets: UserPreset[]): void {
-  localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(presets));
 }
 
 // ── Taste Preference Offsets (user-clickable checkboxes) ───────────────
@@ -217,7 +203,11 @@ interface Equalizer31BandProps {
   mode: EQMode;
   onModeChange: (mode: EQMode) => void;
   onGainsChange?: (gains: number[]) => void;
+  onFeedback?: (rating: FeedbackRating) => void;
   activeProfile?: string;
+  headphoneId?: string;
+  genre?: string;
+  subgenres?: string[];
 }
 
 export default function Equalizer31Band({
@@ -225,10 +215,14 @@ export default function Equalizer31Band({
   mode,
   onModeChange,
   onGainsChange,
+  onFeedback,
   activeProfile = "—",
+  headphoneId = "",
+  genre = "",
+  subgenres = [] as string[],
 }: Equalizer31BandProps) {
   const [gains, setGains] = useState<number[]>(NEUTRAL_GAINS);
-  const [activePreset, setActivePreset] = useState<PresetName | null>(null);
+  const [activePreset, setActivePreset] = useState<BuiltinPresetName | null>(null);
   const [taste, setTaste] = useState<TastePreferences>(DEFAULT_TASTE);
 
   // Compute gains with taste offsets applied
@@ -260,13 +254,13 @@ export default function Equalizer31Band({
     }
   }, [mode, externalGains]);
 
-  // When mode switches to neutral, flatten everything
+  // When mode switches to auto, fetch gains from external source
   useEffect(() => {
-    if (mode === "neutral") {
-      setGains(NEUTRAL_GAINS);
+    if (mode === "auto" && externalGains) {
+      setGains(externalGains);
       setActivePreset(null);
     }
-  }, [mode]);
+  }, [mode, externalGains]);
 
   const handleTasteToggle = useCallback((key: keyof TastePreferences) => {
     setTaste((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -274,7 +268,7 @@ export default function Equalizer31Band({
 
   const handleBandChange = useCallback(
     (index: number, value: number) => {
-      if (mode === "auto" || mode === "neutral") return; // read-only in those modes
+      if (mode === "auto") return; // read-only in auto mode
       // Convert effective value back to base value by removing taste offset
       let baseValue = value;
       (Object.keys(taste) as Array<keyof TastePreferences>).forEach((key) => {
@@ -295,18 +289,17 @@ export default function Equalizer31Band({
   );
 
   const handlePresetClick = useCallback(
-    (preset: PresetName) => {
-      if (mode === "neutral") return;
-      const newGains = PRESET_GAINS[preset];
+    (preset: BuiltinPresetName) => {
+      const newGains = BUILTIN_PRESET_GAINS[preset];
       setGains(newGains);
       setActivePreset(preset);
       onModeChange("preset");
       onGainsChange?.(newGains);
     },
-    [mode, onModeChange, onGainsChange]
+    [onModeChange, onGainsChange]
   );
 
-  const isReadOnly = mode === "auto" || mode === "neutral";
+  const isReadOnly = mode === "auto";
 
   return (
     <div className="eq-panel">
@@ -315,9 +308,7 @@ export default function Equalizer31Band({
         <div className="eq-panel__title-row">
           <div>
             <div className="eq-panel__profile-name">
-              {mode === "neutral"
-                ? "Flat / Neutral"
-                : mode === "preset" && activePreset
+              {mode === "preset" && activePreset
                 ? activePreset
                 : activeProfile}
             </div>
@@ -327,7 +318,7 @@ export default function Equalizer31Band({
 
         {/* Mode selector */}
         <div className="mode-pills" role="group" aria-label="EQ mode">
-          {(["auto", "manual", "preset", "neutral"] as EQMode[]).map((m) => (
+          {(["auto", "manual", "preset"] as EQMode[]).map((m) => (
             <button
               key={m}
               className={`mode-pill${mode === m ? " mode-pill--active" : ""}`}
@@ -401,7 +392,7 @@ export default function Equalizer31Band({
 
       {/* Preset strip */}
       <div className="preset-strip" role="list" aria-label="EQ presets">
-        {PRESETS.map((p) => (
+        {BUILTIN_PRESETS.map((p) => (
           <button
             key={p}
             role="listitem"
@@ -413,6 +404,34 @@ export default function Equalizer31Band({
           </button>
         ))}
       </div>
+
+      {/* Feedback strip - "ChatGPT-like" natural language EQ feedback */}
+      {(mode === "auto" || mode === "manual") && onFeedback && headphoneId && genre && (
+        <div className="feedback-strip" role="group" aria-label="Sound quality feedback">
+          <div className="feedback-strip__label">How does it sound?</div>
+          <div className="feedback-buttons">
+            {([
+              { value: "flat", label: "Flat", desc: "Needs more energy" },
+              { value: "muddy", label: "Muddy", desc: "Too boomy/bassy" },
+              { value: "sharp", label: "Sharp", desc: "Harsh/sibilant" },
+              { value: "warm", label: "Warm", desc: "Too thick" },
+              { value: "neutral", label: "Neutral", desc: "A bit bland" },
+              { value: "good", label: "Good", desc: "Sounds right" },
+            ] as const).map(({ value, label, desc }) => (
+              <button
+                key={value}
+                className="feedback-btn"
+                onClick={() => onFeedback(value as FeedbackRating)}
+                title={desc}
+                aria-label={`${label} - ${desc}`}
+              >
+                <span className="feedback-btn__label">{label}</span>
+                <span className="feedback-btn__desc">{desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
