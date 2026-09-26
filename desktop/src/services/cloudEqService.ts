@@ -8,7 +8,7 @@ export interface CloudEQProfile {
   headphoneBrand: string;
   headphoneModel: string;
   genre: string;
-  subgenres: string[];
+  subgenres: { name: string; weight: number }[];
   basePreset: BuiltinPresetName;
   tasteOverrides: Partial<TastePreferences>;
   gains: number[];
@@ -23,7 +23,7 @@ export interface UserFeedback {
   headphoneId: string;
   trackId: string;
   genre: string;
-  subgenres: string[];
+  subgenres: { name: string; weight: number }[];
   baseGains: number[];
   taste: TastePreferences;
   rating: FeedbackRating;
@@ -74,7 +74,7 @@ export async function fetchHeadphoneProfiles(
 export async function fetchBestProfile(
   headphoneId: string,
   genre: string,
-  subgenres: string[]
+  subgenres: { name: string; weight: number }[]
 ): Promise<CloudEQProfile | null> {
   const profiles = await fetchHeadphoneProfiles(headphoneId, genre);
   if (!profiles.length) return null;
@@ -190,7 +190,7 @@ export function applyFeedbackCorrections(
 export function learnProfile(
   headphoneId: string,
   genre: string,
-  subgenres: string[],
+  subgenres: { name: string; weight: number }[],
   baseGains: number[],
   baseTaste: TastePreferences,
   feedbackHistory: UserFeedback[]
@@ -231,7 +231,7 @@ export function learnProfile(
 export async function getBestEQForContext(
   headphoneId: string,
   genre: string,
-  subgenres: string[],
+  subgenres: { name: string; weight: number }[],
   basePreset: BuiltinPresetName,
   baseTaste: TastePreferences
 ): Promise<{ gains: number[]; source: "cloud" | "learned" | "builtin"; profile?: CloudEQProfile }> {

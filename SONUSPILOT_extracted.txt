@@ -1,0 +1,448 @@
+SONUSPILOT — MASTER IMPLEMENTATION INSTRUCTION
+You are completing the existing 
+SonusPilot
+ Windows desktop application
+.
+This is an existing project. 
+DO NOT rebuild it from scratch.
+Your goal is to turn the current repository into a 
+real, stable, installable Windows adaptive-EQ application
+.
+1. FIRST: AUDIT, DO NOT CODE
+Before changing anything, inspect the entire repository.
+Understand:
+React/TypeScript frontend
+Tauri/Rust backend
+GSMTC/media-session code
+Windows audio/device code
+EQ/DSP code
+state management
+backend/API code
+package/Cargo configuration
+installer configuration
+tests
+assets
+scripts
+duplicated/abandoned projects
+Omniroute
+/unrelated functionality
+mocks/stubs/fake implementations
+Trace:
+Windows media → GSMTC → Tauri/Rust → frontend → track state → EQ logic → audio engine → output device.
+Determine what is 
+working, broken, mocked, stubbed, duplicated, or missing
+.
+Do not trust documentation or comments without verifying the code.
+After the audit, create a concise internal execution plan and execute it. Do not repeatedly ask me obvious technical questions.
+2. CLEAN THE PROJECT
+SonusPilot
+ is the only product.
+Remove unrelated:
+Omniroute
+unrelated AI/model infrastructure
+abandoned experiments
+duplicate applications
+unrelated scripts
+temporary/generated files
+obsolete prototypes
+Do not delete anything until you verify it is not required.
+Preserve useful existing 
+SonusPilot
+ code.
+3. REPAIR BEFORE ADDING FEATURES
+Get the existing project into a clean build state first.
+Run the appropriate:
+npm
+ run build
+npm
+ run 
+typecheck
+ if available
+cargo check
+existing tests
+Fix root causes.
+Target:
+0 TypeScript errors
+0 Rust errors
+0 obvious runtime initialization errors
+Do not hide problems with any, @ts-ignore, or @ts-nocheck.
+4. NO FAKE ADAPTIVE EQ
+Remove/rework any hardcoded system such as:
+EDM → +bass
+Dream Pop → +treble
+Metal → -
+mids
+Genre may provide context, but it must 
+not
+ be the primary source of invented EQ values.
+Never pretend metadata is PCM audio.
+Never claim an LLM can determine correct EQ merely from a song title.
+Never generate fake AI/ML predictions just to make the UI look intelligent.
+If required data is unavailable, expose that limitation and use a clearly defined fallback.
+5. WINDOWS AUDIO ENGINE
+Research and implement the strongest technically practical Windows audio architecture.
+Keep these concepts separate:
+media detection
+audio capture/routing
+DSP processing
+EQ calculation
+output
+Provide three modes:
+NORMAL
+Standard Windows shared audio. 
+SonusPilot
+ does not intercept/process unsupported audio.
+SYSTEM EQ
+For supported configurations, route/capture audio through 
+SonusPilot
+, process it with real-time DSP/EQ, and output to the selected device.
+EXCLUSIVE / HI-FI
+Use WASAPI Exclusive where technically possible and process audio before sending it to the selected endpoint.
+Clearly show when exclusive mode is active.
+If exclusive access fails because another application owns the device, gracefully fall back to shared mode.
+Do not create a fake "Exclusive" switch that does nothing.
+Research WASAPI, process loopback, APOs, Equalizer APO, virtual audio devices and other legitimate Windows approaches. Choose the most practical architecture and explain the decision in the final report.
+6. REAL DSP PIPELINE
+Implement the actual pipeline where technically possible:
+Audio Input
+→ audio features
+→ DSP
+→ adaptive EQ
+→ 31-band/parametric EQ
+→ gain/preamp
+→ safety validation
+→ output
+Handle:
+sample rate
+channel format
+buffer size
+clipping
+headroom
+latency
+device changes
+engine failures
+smooth EQ transitions
+Prioritize stable, glitch-free playback.
+7. GSMTC
+Keep Windows GSMTC for generic media detection.
+Support:
+title
+artist
+album
+playback state
+media session
+track identifier when available
+Handle:
+no session
+multiple sessions
+unsupported applications
+missing metadata
+rapid song changes
+pause/resume/stop
+Do not make unnecessary Spotify-specific assumptions.
+Remember:
+GSMTC metadata ≠ PCM audio.
+8. ADAPTIVE EQ
+SonusPilot
+ should combine, when available:
+actual audio characteristics
+headphone/IEM response
+target response
+listener preferences
+learned preferences
+musical context
+Then produce a bounded EQ through a deterministic DSP layer.
+There are two capability levels:
+Level 1 — No PCM
+Use:
+metadata + headphone profile + target + preferences + learned history.
+Level 2 — Real audio available
+Analyze
+ actual audio using useful measurable features such as:
+RMS/LUFS
+band energy
+spectral balance
+spectral centroid/
+rolloff
+/flux 
+where
+ useful
+dynamics
+crest factor
+transients
+harmonic characteristics
+stereo characteristics 
+where
+ useful
+Only use features that genuinely contribute to EQ decisions.
+Do not fake audio analysis.
+9. HEADPHONE/IEM COMPENSATION
+Implement real headphone/IEM profile support.
+Allow:
+Windows output device
+→ user mapping
+→ headphone/IEM profile
+Research credible measurement sources such as 
+AutoEQ
+ and headphone/IEM measurement databases.
+Support target curves as configurable references, not objective truth.
+Keep the desktop lightweight. Do not bundle enormous databases.
+Cache only necessary/recent data.
+10. 31-BAND EQ + SAFETY
+Maintain the existing 31-band EQ UI if it is usable.
+Support:
+Neutral
+Manual
+Preset
+Automatic
+Adaptive
+Natural-language adjustments
+Learned personalization
+Implement:
+gain limits
+smoothing
+headroom/preamp
+clipping protection
+maximum correction limits
+transition interpolation
+safe fallback
+Never blindly apply extreme boosts.
+11. SONG/PREFERENCE LEARNING
+When the user changes generated EQ, store useful learning data:
+generated EQ
+final user EQ
+track/context
+artist
+headphone
+output device
+frequency/adjustment
+timestamp
+mode
+confidence
+Learn gradually.
+Use a simple defensible approach such as EMA, Bayesian updating, contextual preference learning, regression, or another appropriate lightweight method.
+Avoid overfitting.
+Use a hierarchy when enough evidence exists:
+Global preference
+→ headphone preference
+→ context/genre preference
+→ artist preference
+→ song preference
+One correction must not completely change the model.
+The learning system must actually influence future EQ.
+12. NATURAL-LANGUAGE EQ
+Add a simple feedback interface supporting phrases such as:
+"
+too
+ muddy"
+"
+too
+ sharp"
+"
+too
+ bright"
+"
+too
+ warm"
+"too much bass"
+"
+not
+ enough bass"
+"
+vocals
+ aren't clear"
+"
+more
+ air"
+"
+less
+ harsh"
+"
+make
+ it more neutral"
+"
+reduce
+ the boom"
+Do not directly convert an LLM response into arbitrary EQ.
+Use:
+User feedback
+→ intent
+→ frequency-region hypothesis
+→ confidence
+→ bounded adjustment
+→ apply/preview
+→ user response
+→ learning signal
+Show the user what 
+SonusPilot
+ understood.
+Example:
+Detected: Reduce low-mid warmth
+Adjustment: -1.5 dB around 250 Hz
+Confidence: 0.82
+Allow accept/reject.
+The final EQ must always pass the deterministic safety layer.
+13. EXPLANATIONS
+SonusPilot
+ should explain adaptive decisions simply.
+Example:
+"Your headphones have elevated energy in this region and this track currently has strong energy there, so a small reduction was applied."
+Never claim an EQ is objectively correct.
+14. UI
+Finish the existing UI into a polished Windows audio application.
+Clearly show:
+SonusPilot
+current song
+artist
+album
+output device
+headphone/IEM
+genre/subgenre when available
+adaptive EQ status
+31-band EQ
+Normal/System EQ/Exclusive modes
+current EQ explanation
+feedback control
+presets
+connection status
+audio-engine status
+The complexity of DSP, GSMTC, APIs and ML should remain mostly invisible to the user.
+Ideal experience:
+Open 
+SonusPilot
+→ choose headphone once
+→ play music
+→ 
+SonusPilot
+ detects track
+→ determines available audio capability
+→ adapts EQ
+→ smoothly applies it.
+15. FAILURE HANDLING
+Gracefully handle:
+no media
+unsupported media
+missing track ID
+multiple sessions
+metadata conflicts
+rate limits
+backend unavailable
+no internet
+output device changes
+unknown headphone
+EQ engine unavailable
+permissions
+unsupported audio source
+audio capture unavailable
+AI unavailable
+exclusive-mode conflict
+rapid song changes
+manual override
+If adaptive EQ cannot operate, fall back safely instead of crashing.
+16. PERFORMANCE + PRIVACY
+Optimize for:
+low CPU
+low memory
+low latency
+fast startup
+smooth UI
+minimal unnecessary network traffic
+stable audio
+Prefer local DSP and local preference learning.
+Do not upload raw audio unless technically necessary and explicitly justified.
+Keep local storage lightweight.
+17. TEST EVERYTHING
+Do not declare a feature complete because it compiles.
+For major features:
+implement → compile → run → test → verify
+Test:
+startup
+GSMTC
+play
+pause
+resume
+song changes
+output-device changes
+headphone mapping
+EQ generation
+EQ safety limits
+EQ transitions
+manual changes
+natural-language feedback
+learning
+audio-engine failure
+backend failure
+internet failure
+exclusive-mode failure
+recovery/fallback
+For learning specifically:
+Generate EQ
+→ user modifies EQ
+→ store correction
+→ generate again
+→ verify the correction influences the result.
+18. INSTALLER
+Produce a genuine Windows installer using Tauri's existing bundling system where appropriate.
+The final installer must:
+install 
+SonusPilot
+launch correctly
+use correct name/icon
+install required dependencies
+configure required audio components when necessary
+create Start Menu entry
+optionally create desktop shortcut
+uninstall correctly
+Actually
+ test the installed application.
+Do not create a fake .exe.
+19. FINAL QA
+Before completion:
+rebuild everything
+rerun tests
+inspect runtime 
+behavior
+inspect final repository
+remove dead/unrelated code
+verify no 
+Omniroute
+verify no fake AI
+verify no hardcoded 
+genre→EQ
+ system
+verify no fake PCM/audio analysis
+verify installer
+verify clean startup
+verify safe fallback 
+behavior
+Never knowingly leave the repository broken.
+20. FINAL REPORT
+When finished, report concisely:
+What existed
+What was broken
+What was repaired
+What was implemented
+Actual Windows audio architecture
+Adaptive EQ architecture
+Learning approach
+Tests performed
+Build result
+Installer location
+Remaining limitations/issues
+Honest completion percentage
+Do not claim a feature works unless you actually tested it.
+CORE RULE
+Optimize for:
+REAL AUDIO PROCESSING
+TECHNICALLY DEFENSIBLE ADAPTATION
+USEFUL PERSONALIZATION
+STABILITY
+SAFETY
+GOOD SOUND
+Not:
+fake AI
+more code
+more models
+hardcoded genre EQ
+mock functionality
+Start by auditing the existing repository now, then execute the work without restarting the project.

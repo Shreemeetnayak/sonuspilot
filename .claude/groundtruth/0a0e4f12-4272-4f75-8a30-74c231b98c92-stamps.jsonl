@@ -1,0 +1,1 @@
+{"ts":1790280177095,"cmd":"cd desktop && npx tsc --noEmit 2>&1 | head -50","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}

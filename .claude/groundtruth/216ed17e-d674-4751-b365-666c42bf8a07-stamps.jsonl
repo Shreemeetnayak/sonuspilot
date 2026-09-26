@@ -1,0 +1,2 @@
+{"ts":1790275192485,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | tail -25","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"8a4403e8b87ee9501598c3565faff7c613990cb1e0bbd6718f9b6631659d0648"}
+{"ts":1790275333146,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npx tsc --noEmit 2>&1 | head -40","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"8a4403e8b87ee9501598c3565faff7c613990cb1e0bbd6718f9b6631659d0648"}
