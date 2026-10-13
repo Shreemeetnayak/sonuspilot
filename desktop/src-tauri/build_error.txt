@@ -1,0 +1,272 @@
+   Compiling torch-sys v0.26.0
+warning: torch-sys@0.26.0: cl : Command line warning D9002 : ignoring unknown option '/p:DefineConstants=GLOG_USE_GLOG_EXPORT'
+warning: torch-sys@0.26.0: cl : Command line warning D9002 : ignoring unknown option '/p:DefineConstants=GLOG_USE_GLOG_EXPORT'
+warning: torch-sys@0.26.0: ToolExecError: command did not execute successfully (status code exit code: 2): "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include\\torch\\csrc\\api\\include" "-W0" "/std:c++17" "/p:DefineConstants=GLOG_USE_GLOG_EXPORT" "-FoC:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop\\src-tauri\\target\\debug\\build\\torch-sys-0e96cd4e646e7070\\out\\580bbbcdaf464958-torch_api.o" "-c" "libtch/torch_api.cpp"
+warning: torch-sys@0.26.0: ToolExecError: command did not execute successfully (status code exit code: 2): "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include\\torch\\csrc\\api\\include" "-W0" "/std:c++17" "/p:DefineConstants=GLOG_USE_GLOG_EXPORT" "-FoC:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop\\src-tauri\\target\\debug\\build\\torch-sys-0e96cd4e646e7070\\out\\580bbbcdaf464958-torch_api_generated.o" "-c" "libtch/torch_api_generated.cpp"
+error: failed to run custom build command for `torch-sys v0.26.0`
+
+Caused by:
+  process didn't exit successfully: `C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri\target\debug\build\torch-sys-765db12d38e4562e\build-script-build` (exit code: 1)
+  --- stdout
+  cargo:rerun-if-env-changed=LIBTORCH_USE_PYTORCH
+  cargo:rerun-if-env-changed=LIBTORCH_BYPASS_VERSION_CHECK
+  cargo:rerun-if-env-changed=LIBTORCH_STATIC
+  cargo:rustc-link-search=native=C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\lib
+  cargo:rerun-if-changed=libtch/torch_python.cpp
+  cargo:rerun-if-changed=libtch/torch_python.h
+  cargo:rerun-if-changed=libtch/torch_api_generated.cpp
+  cargo:rerun-if-changed=libtch/torch_api_generated.h
+  cargo:rerun-if-changed=libtch/torch_api.cpp
+  cargo:rerun-if-changed=libtch/torch_api.h
+  cargo:rerun-if-changed=libtch/stb_image_write.h
+  cargo:rerun-if-changed=libtch/stb_image_resize.h
+  cargo:rerun-if-changed=libtch/stb_image.h
+  cargo:rerun-if-env-changed=CC_FORCE_DISABLE
+  CC_FORCE_DISABLE = None
+  cargo:rerun-if-env-changed=VCINSTALLDIR
+  VCINSTALLDIR = None
+  cargo:rerun-if-env-changed=VSTEL_MSBuildProjectFullPath
+  VSTEL_MSBuildProjectFullPath = None
+  cargo:rerun-if-env-changed=VCToolsVersion
+  VCToolsVersion = None
+  cargo:rerun-if-env-changed=VSCMD_ARG_VCVARS_SPECTRE
+  VSCMD_ARG_VCVARS_SPECTRE = None
+  cargo:rerun-if-env-changed=WindowsSdkDir
+  WindowsSdkDir = None
+  cargo:rerun-if-env-changed=WindowsSDKVersion
+  WindowsSDKVersion = None
+  cargo:rerun-if-env-changed=LIB
+  LIB = None
+  PATH = Some(C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri\target\debug;C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri\target\debug\deps;C:\Users\KIIT0001\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\lib;C:\Users\KIIT0001\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\KIIT0001\bin;C:\oraclexe\app\oracle\product\11.2.0\server\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\MinGW\bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Program Files\GitHub CLI;C:\Program Files\WSL;C:\Users\KIIT0001\AppData\Local\Programs\OpenAI\Codex\bin;C:\Users\KIIT0001\.cargo\bin;C:\Users\KIIT0001\.local\bin;C:\Users\KIIT0001\.pnpm-global;C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Scripts;C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313;C:\Users\KIIT0001\AppData\Local\Microsoft\WindowsApps;C:\Users\KIIT0001\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\KIIT0001\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Python 3.13;C:\Users\KIIT0001\AppData\Local\Python\bin;C:\Users\KIIT0001\AppData\Local\Kingsoft\WPS Office\12.1.0.27458\clitool;C:\Users\KIIT0001\AppData\Roaming\npm;C:\Users\KIIT0001\AppData\Local\Programs\Antigravity IDE\bin;C:\Users\KIIT0001\.bun\bin;C:\Users\KIIT0001\AppData\Local\GitHubDesktop\bin;C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313;C:\Users\KIIT0001\AppData\Local\Programs\Python\Python311;C:\Program Files\nodejs;C:\Program Files\Git\mingw64\bin;C:\Program Files\GitHub CLI;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\KIIT0001\.claude\plugins\cache\local-desktop-app-uploads\production-website-auditor\1.0.0\bin;C:\Users\KIIT0001\.rustup\toolchains\stable-x86_64-pc-windows-msvc\bin;C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri\target\debug\build\bzip2-sys-cf73a1632d93f051\out\lib;C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri\target\debug\build\zstd-sys-fba39e7c159e4717\out)
+  cargo:rerun-if-env-changed=INCLUDE
+  INCLUDE = None
+  cargo:rerun-if-env-changed=CXX_x86_64-pc-windows-msvc
+  CXX_x86_64-pc-windows-msvc = None
+  cargo:rerun-if-env-changed=CXX_x86_64_pc_windows_msvc
+  CXX_x86_64_pc_windows_msvc = None
+  cargo:rerun-if-env-changed=HOST_CXX
+  HOST_CXX = None
+  cargo:rerun-if-env-changed=CXX
+  CXX = None
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=CXXFLAGS
+  CXXFLAGS = None
+  cargo:rerun-if-env-changed=HOST_CXXFLAGS
+  HOST_CXXFLAGS = None
+  cargo:rerun-if-env-changed=CXXFLAGS_x86_64_pc_windows_msvc
+  CXXFLAGS_x86_64_pc_windows_msvc = None
+  cargo:rerun-if-env-changed=CXXFLAGS_x86_64-pc-windows-msvc
+  CXXFLAGS_x86_64-pc-windows-msvc = None
+  cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+  torch_api_generated.cpp
+  torch_api.cpp
+  cargo:warning=cl : Command line warning D9002 : ignoring unknown option '/p:DefineConstants=GLOG_USE_GLOG_EXPORT'
+  cargo:warning=cl : Command line warning D9002 : ignoring unknown option '/p:DefineConstants=GLOG_USE_GLOG_EXPORT'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/StringUtil.h(171): error C7555: use of designated initializers requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/StringUtil.h(171): error C7555: use of designated initializers requires at least '/std:c++20'
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\compare(12): warning STL4038: The contents of <compare> are available only with C++20 or later.
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\compare(12): warning STL4038: The contents of <compare> are available only with C++20 or later.
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2065: 'TTarget1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2065: 'NullType1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2923: 'c10::intrusive_ptr': 'TTarget1' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): note: see declaration of 'TTarget1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2923: 'c10::intrusive_ptr': 'NullType1' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): note: see declaration of 'NullType1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2065: 'TTarget2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2065: 'NullType2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2923: 'c10::intrusive_ptr': 'TTarget2' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): note: see declaration of 'TTarget2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2923: 'c10::intrusive_ptr': 'NullType2' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): note: see declaration of 'NullType2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2143: syntax error: missing ';' before '{'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): note: the template instantiation context (the oldest one first) is
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(831): note: while compiling class template 'c10::weak_intrusive_ptr'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2433: 'strong_ordering': 'friend' not permitted on data declarations
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2238: unexpected token(s) preceding ';'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1106): error C2238: unexpected token(s) preceding ';'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2374: 'strong_ordering': redefinition; multiple initialization
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2086: 'int strong_ordering': redefinition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): note: see declaration of 'strong_ordering'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2065: 'TTarget1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2065: 'NullType1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2923: 'c10::weak_intrusive_ptr': 'TTarget1' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): note: see declaration of 'TTarget1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2923: 'c10::weak_intrusive_ptr': 'NullType1' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): note: see declaration of 'NullType1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2065: 'TTarget2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2065: 'NullType2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2923: 'c10::weak_intrusive_ptr': 'TTarget2' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): note: see declaration of 'TTarget2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2923: 'c10::weak_intrusive_ptr': 'NullType2' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): note: see declaration of 'NullType2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2143: syntax error: missing ';' before '{'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(775): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2065: 'TTarget1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2065: 'NullType1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2923: 'c10::intrusive_ptr': 'TTarget1' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): note: see declaration of 'TTarget1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): error C2923: 'c10::intrusive_ptr': 'NullType1' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(776): note: see declaration of 'NullType1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2065: 'TTarget2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2065: 'NullType2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2923: 'c10::intrusive_ptr': 'TTarget2' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): note: see declaration of 'TTarget2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2923: 'c10::intrusive_ptr': 'NullType2' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): note: see declaration of 'NullType2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2143: syntax error: missing ';' before '{'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(777): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): note: the template instantiation context (the oldest one first) is
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(831): note: while compiling class template 'c10::weak_intrusive_ptr'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2433: 'strong_ordering': 'friend' not permitted on data declarations
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2238: unexpected token(s) preceding ';'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1106): error C2238: unexpected token(s) preceding ';'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2039: 'strong_ordering': is not a member of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/complex_math.h(419): note: see declaration of 'std'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2143: syntax error: missing ';' before '<='
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2374: 'strong_ordering': redefinition; multiple initialization
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2086: 'int strong_ordering': redefinition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1104): note: see declaration of 'strong_ordering'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2988: unrecognizable template declaration/definition
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1124): error C2059: syntax error: '>'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2065: 'TTarget1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2065: 'NullType1': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2923: 'c10::weak_intrusive_ptr': 'TTarget1' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): note: see declaration of 'TTarget1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): error C2923: 'c10::weak_intrusive_ptr': 'NullType1' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1125): note: see declaration of 'NullType1'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2065: 'TTarget2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2065: 'NullType2': undeclared identifier
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2923: 'c10::weak_intrusive_ptr': 'TTarget2' is not a valid template type argument for parameter 'TTarget'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): note: see declaration of 'TTarget2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2923: 'c10::weak_intrusive_ptr': 'NullType2' is not a valid template type argument for parameter 'NullType'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): note: see declaration of 'NullType2'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2143: syntax error: missing ';' before '{'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/util/intrusive_ptr.h(1126): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(84): error C7582: 'grad_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(85): error C7582: 'inference_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(84): error C7582: 'grad_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(86): error C7582: 'fw_grad_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(85): error C7582: 'inference_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(87): error C7582: 'multithreading_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(86): error C7582: 'fw_grad_mode_': default member initializers for bit-fields requires at least '/std:c++20'
+  CC:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(87): error C7582: 'multithreading_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  :\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(88): error C7582: 'view_replay_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(88): error C7582: 'view_replay_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(89): error C7582: 'grad_layout_enforcement_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/AutogradState.h(89): error C7582: 'grad_layout_enforcement_enabled_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2952): error C7582: 'is_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2955): error C7582: 'storage_access_should_throw_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2961): error C7582: 'is_channels_last_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2965): error C7582: 'is_channels_last_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2971): error C7582: 'is_channels_last_3d_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2975): error C7582: 'is_channels_last_3d_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2980): error C7582: 'is_non_overlapping_and_dense_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2982): error C7582: 'is_wrapped_number_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2999): error C7582: 'allow_tensor_metadata_change_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3005): error C7582: 'reserved_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3011): error C7582: 'sizes_strides_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3015): error C7582: 'has_symbolic_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2952): error C7582: 'is_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3019): error C7582: 'custom_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2955): error C7582: 'storage_access_should_throw_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3023): error C7582: 'device_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2961): error C7582: 'is_channels_last_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3024): error C7582: 'layout_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2965): error C7582: 'is_channels_last_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3027): error C7582: 'custom_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2971): error C7582: 'is_channels_last_3d_': default member initializers for bit-fields requires at least '/std:c++20'
+  CC:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2975): error C7582: 'is_channels_last_3d_contiguous_': default member initializers for bit-fields requires at least '/std:c++20'
+  :\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3030): error C7582: 'custom_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2980): error C7582: 'is_non_overlapping_and_dense_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3034): error C7582: 'python_custom_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  CC:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3038): error C7582: 'python_custom_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  :\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2982): error C7582: 'is_wrapped_number_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3041): error C7582: 'python_custom_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(2999): error C7582: 'allow_tensor_metadata_change_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3005): error C7582: 'reserved_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3011): error C7582: 'sizes_strides_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3015): error C7582: 'has_symbolic_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3019): error C7582: 'custom_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3023): error C7582: 'device_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3024): error C7582: 'layout_policy_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3027): error C7582: 'custom_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3030): error C7582: 'custom_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3034): error C7582: 'python_custom_sizes_strides_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3038): error C7582: 'python_custom_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorImpl.h(3041): error C7582: 'python_custom_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(549): error C7582: 'requires_grad_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(550): error C7582: 'pinned_memory_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(552): error C7582: 'has_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(553): error C7582: 'has_dtype_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(554): error C7582: 'has_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(555): error C7582: 'has_requires_grad_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(556): error C7582: 'has_pinned_memory_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(557): error C7582: 'has_memory_format_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(549): error C7582: 'requires_grad_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(550): error C7582: 'pinned_memory_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(552): error C7582: 'has_device_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(553): error C7582: 'has_dtype_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(554): error C7582: 'has_layout_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(555): error C7582: 'has_requires_grad_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(556): error C7582: 'has_pinned_memory_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\c10/core/TensorOptions.h(557): error C7582: 'has_memory_format_': default member initializers for bit-fields requires at least '/std:c++20'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1031): error C2143: syntax error: missing ';' before 'std::is_same_v'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1032): error C2143: syntax error: missing ';' before 'c10::SymIntArrayRef'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1031): error C2143: syntax error: missing ';' before 'std::is_same_v'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1032): error C2143: syntax error: missing ';' before 'c10::SymIntArrayRef'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1032): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1032): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1034): error C2143: syntax error: missing ';' before 'std::is_same_v'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2146: syntax error: missing ';' before identifier 'IntArrayRef'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1034): error C2143: syntax error: missing ';' before 'std::is_same_v'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2143: syntax error: missing ';' before '{'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2146: syntax error: missing ';' before identifier 'IntArrayRef'
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2447: '{': missing function header (old-style formal list?)
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2143: syntax error: missing ';' before '{'
+  CC:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): error C2447: '{': missing function header (old-style formal list?):\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): fatal error C1003: error count exceeds 100; stopping compilation
+
+  C:\Users\KIIT0001\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\include\ATen/core/TensorBase.h(1035): fatal error C1003: error count exceeds 100; stopping compilation
+  exit code: 2
+  cargo:warning=ToolExecError: command did not execute successfully (status code exit code: 2): "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include\\torch\\csrc\\api\\include" "-W0" "/std:c++17" "/p:DefineConstants=GLOG_USE_GLOG_EXPORT" "-FoC:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop\\src-tauri\\target\\debug\\build\\torch-sys-0e96cd4e646e7070\\out\\580bbbcdaf464958-torch_api.o" "-c" "libtch/torch_api.cpp"
+  exit code: 2
+  cargo:warning=ToolExecError: command did not execute successfully (status code exit code: 2): "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include\\torch\\csrc\\api\\include" "-W0" "/std:c++17" "/p:DefineConstants=GLOG_USE_GLOG_EXPORT" "-FoC:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop\\src-tauri\\target\\debug\\build\\torch-sys-0e96cd4e646e7070\\out\\580bbbcdaf464958-torch_api_generated.o" "-c" "libtch/torch_api_generated.cpp"
+
+  --- stderr
+
+
+  error occurred in cc-rs: command did not execute successfully (status code exit code: 2): "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include" "-I" "C:\\Users\\KIIT0001\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\torch\\include\\torch\\csrc\\api\\include" "-W0" "/std:c++17" "/p:DefineConstants=GLOG_USE_GLOG_EXPORT" "-FoC:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop\\src-tauri\\target\\debug\\build\\torch-sys-0e96cd4e646e7070\\out\\580bbbcdaf464958-torch_api_generated.o" "-c" "libtch/torch_api_generated.cpp"
+
+

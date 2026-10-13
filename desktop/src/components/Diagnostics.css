@@ -1,0 +1,207 @@
+/* Diagnostics — the audio-path panel.
+   Colour never carries meaning on its own: every dot also has a distinct glyph
+   and every stage is spelled out in text. */
+
+.diagnostics {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px 16px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.diagnostics__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.diagnostics__title {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.diagnostics__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  max-width: 46ch;
+}
+
+.diagnostics__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.diagnostics__close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ── Verdict ─────────────────────────────────────────────────────────── */
+
+.diagnostics__verdict {
+  border: 1px solid var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.diagnostics__verdict--ok {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+
+/* ── Stage list ──────────────────────────────────────────────────────── */
+
+.diagnostics__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.diagnostics__item {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+}
+
+.diagnostics__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diagnostics__dot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #0e0e10;
+}
+
+.diagnostics__dot--ok       { background: var(--success); }
+.diagnostics__dot--detected { background: var(--warning); }
+.diagnostics__dot--blocked  { background: var(--error); color: #fff; }
+
+.diagnostics__line {
+  flex: 1;
+  width: 2px;
+  margin: 3px 0;
+  background: var(--border);
+}
+
+.diagnostics__body {
+  padding-bottom: 14px;
+  min-width: 0;
+}
+
+.diagnostics__item:last-child .diagnostics__body {
+  padding-bottom: 0;
+}
+
+.diagnostics__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diagnostics__hop {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.diagnostics__state {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diagnostics__state--ok       { color: var(--success); }
+.diagnostics__state--detected { color: var(--warning); }
+.diagnostics__state--blocked  { color: var(--error); }
+
+.diagnostics__detail {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.diagnostics__remedy {
+  margin: 5px 0 0;
+  padding: 6px 9px;
+  border-left: 2px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+
+.diagnostics__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.diagnostics__test {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.diagnostics__test:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.diagnostics__test:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.diagnostics__reading {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.diagnostics__error {
+  color: var(--error);
+  font-size: 11.5px;
+}

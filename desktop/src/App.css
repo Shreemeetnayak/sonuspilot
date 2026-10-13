@@ -63,18 +63,196 @@ html, body, #root {
 /* ── App Layout ──────────────────────────────────────────────────── */
 .app {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr auto auto;
   grid-template-columns: 1fr;
   height: 100vh;
   background: var(--bg-base);
 }
 
+/* The assistant is the third column, not a fourth row. When closed the
+   column collapses to 0 and the EQ reclaims the width. */
 .app__main {
+  position: relative;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr) 0;
   overflow: hidden;
   border-top: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
+  /* No transition here: grid-template-columns is not interpolable, and
+     transitioning it leaves the column stuck at its previous computed value. */
+}
+
+.app__main--assistant-open {
+  grid-template-columns: 280px minmax(0, 1fr) 380px;
+}
+
+.assistant-drawer {
+  display: none;
+  overflow: hidden;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  min-width: 0;
+}
+
+.assistant-drawer--open {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Adaptive EQ breakdown ────────────────────────────────────────── */
+.why-card__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.why-card__toggle .card__label {
+  margin-bottom: 0;
+}
+
+.why-card__chevron {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.why-card__toggle:hover .why-card__chevron {
+  color: var(--text-secondary);
+}
+
+.why-card__toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.why-card__layers {
+  list-style: none;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.why-card__layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.why-card__layer-label {
+  color: var(--text-secondary);
+}
+
+.why-card__layer-value {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.why-card__layer--headroom {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.why-card__layer--confidence .why-card__layer-value {
+  color: var(--text-muted);
+}
+
+.why-card__hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.why-card--empty {
+  opacity: 0.65;
+}
+
+/* ── Assistant launcher ───────────────────────────────────────────── */
+.assistant-launch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.assistant-launch:hover {
+  color: var(--text-primary);
+  border-left-color: var(--accent);
+}
+
+.assistant-launch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ── Title bar assistant toggle ───────────────────────────────────── */
+.titlebar__assistant-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.titlebar__assistant-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.titlebar__assistant-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── Chat close button ────────────────────────────────────────────── */
+.chat-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.chat-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.chat-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* ── Title Bar ───────────────────────────────────────────────────── */
@@ -180,3 +358,67 @@ html, body, #root {
   50%       { opacity: 0.3; }
 }
 
+
+.app__status-note {
+  margin: 0;
+  padding: 6px 16px 8px;
+  font-size: 11px;
+  color: var(--text-dim, #7a7a82);
+  border-top: 1px solid var(--border, #1e1e22);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-link {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--accent, #7aa2f7);
+  border: 1px solid var(--border, #2a2a30);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-link:hover {
+  border-color: var(--accent, #7aa2f7);
+}
+
+/* ── Responsive behaviour ─────────────────────────────────────────────
+   Small windows give the EQ priority: the left panel collapses first,
+   then the assistant becomes an overlay instead of a column. */
+@media (max-width: 1000px) {
+  .app__main { grid-template-columns: 240px minmax(0, 1fr) 0; }
+  .app__main--assistant-open { grid-template-columns: 240px minmax(0, 1fr) 340px; }
+}
+
+@media (max-width: 820px) {
+  /* Too narrow for three columns — the assistant overlays the EQ instead of
+     squeezing it, so the audio controls always keep priority. */
+  .app__main,
+  .app__main--assistant-open { grid-template-columns: 220px minmax(0, 1fr); }
+
+  .assistant-drawer--open {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(380px, 100%);
+    z-index: 20;
+    border-left: 1px solid var(--border);
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
+@media (max-width: 640px) {
+  .app__main,
+  .app__main--assistant-open { grid-template-columns: 180px minmax(0, 1fr); }
+  .card { padding: 12px; }
+  .assistant-drawer--open { width: 100%; }
+}
+
+/* Users who ask for less motion get none. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

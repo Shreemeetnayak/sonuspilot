@@ -1,308 +1,245 @@
-# SonusPilot — System Architecture & Engineering Design
+# SonusPilot — System Architecture
 
-**Version:** 1.0.0  
-**Status:** Architecture Design Phase (Pre-Implementation)  
-**Target Platform:** Windows 11 (Primary), Tauri 2.x (Rust + React/TypeScript)
+**Version:** 0.2 (draft) · **Last updated:** 2026-10-13 · **Supersedes:** ARCHITECTURE v0.1
 
 ---
 
-## 1. Executive Summary & Core Philosophy
+## Summary
 
-**SonusPilot** is a Windows desktop application that dynamically adapts the user's audio EQ according to the music currently playing, the music's genre/subgenre characteristics, and the user's selected headphones/output device.
+SonusPilot is a Windows desktop application (Tauri + Rust + React/TypeScript) that produces one 31-band gain vector per track and per headphone and applies it system-wide through Equalizer APO. The vector is composed from three sources: deterministic headphone correction, a genre prior, and a track-adaptive layer. The track-adaptive layer is a rule-based baseline first (V1) and an optional neural residual later (V2).
 
-### The Core Philosophy
-> *"Let users experience each genre and subgenre in the way that best represents its characteristic sound."*
+The design rests on four rules. Raw audio never leaves the machine. Any failure falls back to a simpler, safe EQ. A safety clamp is applied to every vector regardless of its source. No adaptive behaviour is built until the audio tap has been shown to be safe (Gate 0).
 
-* **Not a loudness maximizer:** The goal is not to make every song sound louder or artificially bass-heavy.
-* **Sound DNA Preservation:** Compensates for headphone coloration while preserving the characteristic sonic identity of different musical styles (e.g., Dream Pop's airy treble, EDM's sub-bass impact, Thrash Metal's tight attack).
-* **No Song-Specific EQs:** We do not map 1-to-1 songs to unique EQ files. Instead, we map songs to **Sound DNA vectors** and **subgenre mixture ratios**, blending reference EQ profiles mathematically.
+> **Status.** The architecture is specified, not built. The Tauri shell is scaffolded; audio capture and the EQ controller are stubs. Latency budgets are provisional. Two decisions are open: where neural inference runs (D-01) and the tap position relative to Equalizer APO (Gate 0).
+
+| Concern | Decision | Claim status |
+| :--- | :--- | :--- |
+| **Where EQ is applied** | Equalizer APO, system-wide, shared-mode audio only | Established (vendor behaviour) |
+| **How audio is analysed** | Local WASAPI loopback tap, features extracted in Rust | Proposed; depends on Gate 0 |
+| **How the EQ vector is built** | Headphone correction + genre prior + track adaptation, then clamp | Proposed |
+| **Where neural inference runs** | Open | Open (C-01) |
+| **Failure behaviour** | Confidence-gated fallback chain | Specified |
 
 ---
 
-## 2. High-Level System Architecture
-
-SonusPilot uses a **Cloud-First Hybrid Architecture**. The desktop application remains lightweight, low-footprint, and fast, while heavy metadata resolution, tag normalization, genre consensus calculation, and profile storage live in a managed cloud backend.
+## 1. System Context
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        WINDOWS 11 DESKTOP (Tauri)                      │
-│                                                                        │
-│  ┌──────────────────────┐     ┌─────────────────────────────────────┐  │
-│  │   Windows GSMTC      │     │       Audio Engine (Equalizer APO)  │  │
-│  │   (Media Session)    │     │       31-Band Parametric/Graphic    │  │
-│  └──────────┬───────────┘     └─────────────────▲───────────────────┘  │
-│             │                                   │                      │
-│             ▼                                   │                      │
-│  ┌──────────────────────┐     ┌─────────────────┴───────────────────┐  │
-│  │  Rust Core Daemon    │────►│   State Manager & Blending Engine   │  │
-│  │  (Event Polling)     │     │   (Equal-Power Crossfade, 20ms)     │  │
-│  └──────────┬───────────┘     └─────────────────────────────────────┘  │
-│             │                                                          │
-│             ▼ REST / WebSocket                                         │
-└─────────────┼──────────────────────────────────────────────────────────┘
-              │
-              ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                          CLOUD BACKEND                                 │
-│                                                                        │
-│  ┌────────────────┐  ┌──────────────────┐  ┌────────────────────────┐  │
-│  │  API Gateway   │  │ Metadata Resolver│  │ Tag Normalization &    │  │
-│  │  & Rate Limit  │  │ (MusicBrainz/    │  │ Consensus Engine       │  │
-│  └───────┬────────┘  │  Last.fm/Discogs)│  └───────────┬────────────┘  │
-│          │           └────────┬─────────┘              │               │
-│          │                    │                        │               │
-│          ▼                    ▼                        ▼               │
-│  ┌──────────────────────────────────────────────────────────────┐      │
-│  │                      Modular Core DB                         │      │
-│  │        (PostgreSQL + Redis Cache: Profiles, Sound DNA)       │      │
-│  └──────────────────────────────────────────────────────────────┘      │
-└────────────────────────────────────────────────────────────────────────┘
+ ┌────────────┐   ┌─────────────────────┐   ┌────────────────┐   ┌────────────┐
+ │ Media apps │──▶│ Windows audio engine │──▶│ Equalizer APO  │──▶│ Headphones │
+ └────────────┘   └──────────┬──────────┘   └────────▲───────┘   └────────────┘
+                             │ WASAPI loopback tap     │ config file written by SonusPilot
+                             │ (position vs APO = GATE 0)
+                             ▼                         │
+   ┌─────────────────────────────────────────────────────────────────────┐
+   │ SonusPilot (Tauri)                                                   │
+   │  Rust services:  capture → rolling features → eqDecisionEngine ──────┘
+   │                  GSMTC metadata ─┘   headphone detection ─┘          │
+   │  React UI:       auto / manual / describe, 31-band display, status   │
+   └───────────────────────────────┬─────────────────────────────────────┘
+                                   │ metadata strings, derived features, consented feedback
+                                   ▼
+                    ┌───────────────────────────────┐
+                    │ Backend (Python / FastAPI)     │
+                    │ modular monolith: metadata,    │
+                    │ ML inference, RAG, feedback    │
+                    └───────────────────────────────┘
 ```
 
----
-
-## 3. Desktop Architecture (Tauri / Rust / React)
-
-### Directory Structure
-```
-desktop/
-├── src-tauri/
-│   ├── src/
-│   │   ├── main.rs                 # Tauri entry point
-│   │   ├── lib.rs                  # App initialization & plugin setup
-│   │   ├── services/
-│   │   │   │── mod.rs
-│   │   │   ├── media_session.rs    # Windows GSMTC session watcher
-│   │   │   ├── audio_device.rs     # WASAPI output device enumeration
-│   │   │   ├── eq_controller.rs    # Equalizer APO / Peace CLI bridge
-│   │   │   └── api_client.rs       # Backend communication layer
-│   │   └── state.rs                # Shared application state (Arc<Mutex<>> )
-│   └── Cargo.toml
-├── src/                            # React 19 + TypeScript Frontend
-│   ├── components/
-│   │   │── Equalizer31Band.tsx     # Interactive 31-band visualizer & sliders
-│   │   │── DeviceSelector.tsx      # Output device & headphone mapper
-│   │   │── NowPlayingCard.tsx      # Current song, artist, subgenre display
-│   │   └── StatusIndicator.tsx     # Connection & cloud health status
-│   ├── App.tsx
-│   └── main.tsx
-└── package.json
-```
+The loopback tap and Equalizer APO act on the same audio endpoint. If the tap sees audio *after* the EQ, the analyser measures its own correction and the system can oscillate. This hazard is why Gate 0 is a hard stop.
 
 ---
 
-## 4. Audio Processing Architecture
+## 2. Design Principles
 
-### The Engine Selection: Equalizer APO + Peace CLI
-For the MVP and production prototype, SonusPilot integrates with **Equalizer APO** and its command-line companion **Peace**.
-
-* **Why Equalizer APO?** It hooks into the Windows audio engine (`audiodg.exe`) via official Audio Processing Objects (APOs). It provides true system-wide 31-band EQ across Spotify, web browsers, media players, and games. It requires no custom kernel driver signing and introduces negligible CPU/memory overhead.
-* **Programmatic Control:** The Rust backend controls Equalizer APO by writing parametric filter configurations (`.txt`) and invoking Peace CLI commands (e.g., `peace --profile "SonusPilot_Active"`) or updating the configuration file monitored in real time by Equalizer APO.
-
-### Artifact-Free Profile Switching (20ms Equal-Power Crossfade)
-Switching EQ presets instantly can cause digital clicks/pops due to filter coefficient and state discontinuities. SonusPilot implements a **parallel crossfade strategy**:
-1. When a song changes, the backend calculates the target 31-band biquad parameters.
-2. Instead of an instant hard cut, a **20ms equal-power crossfade** is applied between the outgoing filter state and incoming filter state using raised-cosine weights.
-3. This is perceptually transparent (proven in audio research to eliminate clicks in 94%+ of profile transitions) without interrupting the underlying audio stream.
-
----
-
-## 5. GSMTC Integration Architecture
-
-Windows **Global System Media Transport Controls (GSMTC)** extracts real-time playback metadata without needing direct API integrations with Spotify, Apple Music, or browsers.
-
-### What GSMTC Provides & Limits
-* **Provided:** `Title`, `Artist`, `AlbumTitle`, `Thumbnail` (artwork stream), playback status (Playing, Paused, Stopped), timeline position.
-* **Not Provided:** Spotify Track IDs, MusicBrainz IDs, or genre tags.
-* **Supported Sources:** Spotify Desktop App, Windows Media Player, Apple Music, and modern web browsers (Chrome/Edge/Firefox playing YouTube Music, SoundCloud, or Spotify Web Player).
-
-### Rust Implementation Pattern (`media_session.rs`)
-```rust
-use windows::Media::Control::{
-    GlobalSystemMediaTransportControlsSessionManager,
-    GlobalSystemMediaTransportControlsSession,
-};
-
-pub async fn watch_media_sessions() -> Result<(), windows::core::Error> {
-    let manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync()?.await?;
-    let session = manager.GetCurrentSession()?;
-    let props = session.TryGetMediaPropertiesAsync()?.await?;
-    
-    let title = props.Title()?;
-    let artist = props.Artist()?;
-    let album = props.AlbumTitle()?;
-    
-    // Dispatch normalized metadata to backend resolver
-    Ok(())
-}
-```
-
----
-
-## 6. Output-Device Detection & Headphone Mapping
-
-Windows identifies physical audio hardware endpoints (e.g., "Realtek USB Audio", "Apple USB-C Headphone Jack") via WASAPI (`IMMDeviceEnumerator`), but it **cannot** automatically know which physical headphone or IEM is plugged into an analog jack.
-
-### The Headphone Mapping Workflow
-1. **Device Detection:** Rust enumerates the default audio render endpoint using WASAPI.
-2. **Lookup Local Cache:** Check local SQLite/JSON storage for an existing mapping: `OutputDeviceID ──► HeadphoneModelID`.
-3. **Unmapped Device:** If unknown, trigger a toast notification or UI modal: *"New audio output detected (Apple USB-C DAC). Please select your connected headphone/IEM."*
-4. **Persistence:** Once selected, store the mapping locally so future connections auto-load the correct headphone compensation profile.
-
----
-
-## 7. Metadata Acquisition & Consensus Pipeline
-
-When a song plays, the desktop app sends `{ title, artist, album }` to the SonusPilot cloud backend.
-
-```
-Desktop Track Event
-      │
-      ▼
-┌──────────────┐
-│  Redis Cache │ ──(Hit)──► Return Sound DNA & EQ
-└──────┬───────┘
-   (Miss)
-      │
-      ▼
-┌──────────────────────────────────────────────┐
-│             Metadata Resolver                │
-│  ┌────────────────┐    ┌──────────────────┐  │
-│  │  MusicBrainz   │    │     Last.fm      │  │
-│  │ (ID & Genres)  │    │ (Folksonomy Tags)│  │
-│  └───────┬────────┘    └────────┬─────────┘  │
-│          │                      │            │
-│          └──────────┬───────────┘            │
-│                     ▼                        │
-│         ┌───────────────────────┐            │
-│         │   Consensus Engine    │            │
-│         │ (Weighting & Scoring) │            │
-│         └──────────┬────────────┘            │
-└────────────────────┼─────────────────────────┘
-                     │
-                     ▼
-             Normalized Subgenres
-```
-
-### Rate-Limit & API Governance
-* **MusicBrainz:** Hard limit of 1 request/second. Strict User-Agent header required (`SonusPilot/1.0 (contact@sonuspilot.com)`).
-* **Last.fm:** Up to 5 req/sec. Tag normalization map applied (e.g., casing standardization, stripping non-genre tags like `"favourites"` or `"seen live"`).
-* **Discogs:** 60 req/min with Personal Access Token. Used for secondary genre/style verification.
-
----
-
-## 8. Genre/Subgenre Classification & Sound DNA
-
-### Sound DNA Vector Representation
-Instead of hardcoding a single binary genre, each subgenre is represented in the database as a normalized **Sound DNA Vector** (values 0.0 to 1.0):
-
-```json
-{
-  "subgenre": "dream_pop",
-  "dna": {
-    "warmness": 0.70,
-    "bass": 0.40,
-    "vocal_presence": 0.80,
-    "air": 0.90,
-    "stereo_width": 0.95,
-    "treble": 0.65,
-    "density": 0.45
-  }
-}
-```
-
-### Multi-Subgenre Blending Example
-If a song is classified as:
-* 70% Thrash Metal
-* 20% Speed Metal
-* 10% Heavy Metal
-
-The backend calculates the blended reference EQ by weighted summation in the dB domain:
-$$\text{EQ}_{\text{base}}(f) = 0.70 \cdot \text{EQ}_{\text{Thrash}}(f) + 0.20 \cdot \text{EQ}_{\text{Speed}}(f) + 0.10 \cdot \text{EQ}_{\text{Heavy}}(f)$$
-
----
-
-## 9. Headphone Compensation Algorithm
-
-To ensure the output sounds correct on the user's specific hardware, SonusPilot applies headphone compensation aligned with the **Harman Target Curve** (2018 over-ear / IEM standards).
-
-1. **Measurement Source:** Curated parametric EQ profiles derived from trusted measurement standards (e.g., Oratory1990 data or auto-generated target curves).
-2. **Compensation Curve ($C(f)$):** Inverts the headphone's measured frequency response deviation from the Harman target.
-3. **Combined Signal Chain:**
-   $$\text{Final EQ}(f) = \text{HeadphoneCompensation}(f) + \text{BlendedSubgenreEQ}(f) + \text{UserPreference}(f)$$
-
----
-
-## 10. Database Schema (Modular PostgreSQL)
-
-```sql
--- Users & Preferences
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Headphones & Devices
-CREATE TABLE headphones (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    brand VARCHAR(100) NOT NULL,
-    model VARCHAR(150) NOT NULL,
-    target_curve VARCHAR(50) DEFAULT 'Harman 2018',
-    eq_config_text TEXT NOT NULL -- Equalizer APO format
-);
-
-CREATE TABLE device_mappings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    windows_device_id VARCHAR(500) NOT NULL,
-    headphone_id UUID REFERENCES headphones(id),
-    UNIQUE(user_id, windows_device_id)
-);
-
--- Subgenres & Sound DNA
-CREATE TABLE subgenres (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) UNIQUE NOT NULL,
-    sound_dna JSONB NOT NULL,
-    reference_eq_31band NUMERIC[] NOT NULL -- 31 float values in dB
-);
-
--- Songs & Metadata Cache
-CREATE TABLE songs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title_hash VARCHAR(64) UNIQUE NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    artist VARCHAR(255) NOT NULL,
-    album VARCHAR(255),
-    subgenre_weights JSONB NOT NULL, -- e.g. {"thrash_metal": 0.7, "speed_metal": 0.3}
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
----
-
-## 11. Failure Cases & Graceful Degradation
-
-| Failure Scenario | System Response & Fallback |
+| Principle | What it means in practice |
 | :--- | :--- |
-| **Spotify / Media not running** | UI shows "Waiting for audio playback...". EQ defaults to Neutral (0 dB). |
-| **Metadata API unavailable** | Fallback to local cache; if cache miss, apply broad genre fallback (e.g., "Rock" or "Electronic") or Neutral EQ. |
-| **Unknown Headphone / Device** | Prompt user once to select model from dropdown. Default to uncompensated profile until selected. |
-| **Internet Offline** | Operate in offline mode using local cache of recent tracks and default profiles. Show subtle status indicator. |
-| **Rapid Song Skipping** | Debounce track change events by 500ms to prevent thrashing network requests and audio filter resets. |
+| **Baseline first** | Every adaptive stage must beat a named simpler baseline. The simpler system ships if it does not. |
+| **Deterministic fallback** | High neural confidence uses baseline + residual; low confidence or no connection uses the baseline; model failure uses headphone correction only. |
+| **Bounded intent** | Natural-language input is mapped to strict EQ constraints, never to unbounded gains. |
+| **Privacy first** | No raw audio leaves the machine. |
+| **Offline reliability** | Baseline and cached EQ work without a connection. Cloud-only features degrade gracefully. |
+| **Replaceable modules** | A modular monolith, not microservices. Every module sits behind an interface and can be swapped. |
+| **Train/serve parity** | The feature extractor used in training and the one in the Rust runtime share one contract, and a parity test enforces it. |
 
 ---
 
-## 12. Staged Implementation Roadmap
+## 3. Runtime Pipeline
 
-* **Phase 1: Foundation & Scaffolding (Current)**
-  * Tauri shell, React UI layout (31-band visualizer mockup), Windows GSMTC stub.
-* **Phase 2: Audio Engine & Device Detection**
-  * Integrate Windows WASAPI default endpoint detection and Equalizer APO / Peace CLI control in Rust.
-* **Phase 3: Cloud Backend & Metadata Pipeline**
-  * Build Node.js/Rust backend with PostgreSQL, MusicBrainz/Last.fm integration, and tag normalization.
-* **Phase 4: Blending & Compensation Engine**
-  * Implement the 31-band math blending algorithm, Harman headphone compensation, and 20ms crossfade.
-* **Phase 5: Polish & User Testing**
-  * Real-world testing across Spotify and web players, refining UI responsiveness and edge-case error handling.
+| # | Stage | Where | Operation | Fails to |
+| :--- | :--- | :--- | :--- | :--- |
+| **1** | **Track identity** | Local (Rust) | GSMTC supplies title, artist, album. These are normalised and hashed for cache lookup. | Previous track's EQ held until identity resolves |
+| **2** | **Device identity** | Local (Rust) | Detect the output device; resolve a headphone profile. | Neutral correction with a visible notice |
+| **3** | **Audio capture** | Local (Rust) | WASAPI loopback PCM, as established by Gate 0. | Stage 5 is skipped; correction and prior only |
+| **4** | **Feature extraction** | Local (Rust) | Rolling spectral features (for example with RustFFT). | Same as stage 3 |
+| **5** | **Context estimate** | Local or backend | Genre/subgenre distribution from metadata and features. | Generic genre EQ |
+| **6** | **Baseline enhancement** | Local | Percentile-based enhancement relative to the genre distribution, using multi-band relationships (sub-bass/bass, bass/mid, mid/treble), not per-band percentiles alone. | Headphone correction only |
+| **7** | **Neural residual** | Open (D-01) | Bounded residual on top of the baseline. V2 only. | Baseline only |
+| **8** | **Composition** | Local | `eqDecisionEngine` composes the final vector (section 4). | Last known safe vector |
+| **9** | **Safety clamp** | Local | Gain limit, smoothness, headroom. | Neutral vector |
+| **10** | **Application** | Local | Write the APO config; crossfade to the new vector. | Previous vector retained |
+
+---
+
+## 4. EQ Composition
+
+For band *b* of the 31 bands, the final gain is composed as follows.
+
+```
+g_final[b] = clamp( g_hp[b] + g_prior[b] + g_enh[b] + c · r[b] )
+
+  g_hp     deterministic headphone correction toward the configured target
+  g_prior  genre/context prior (a soft prior, not a fixed preset)
+  g_enh    baseline track-adaptive enhancement (V1 percentile rules)
+  r        neural residual (V2; zero in V1)
+  c        confidence gate in [0, 1]; 0 forces baseline only
+  clamp    safety clamp: |g| ≤ MAX_GAIN_DB (PV-01), smoothness limit, headroom offset
+```
+
+> **Claim status: Proposed.** An additive composition is an implementation choice. It is kept only if it behaves well in evaluation; a multiplicative or learned composition may replace it.
+
+### Intended behaviour of each layer
+
+| Layer | Behaviour | Does not |
+| :--- | :--- | :--- |
+| **Headphone correction** | Brings the headphone's measured response toward a configurable target. | Depend on the track. |
+| **Genre prior** | Shifts the starting point toward what that genre typically sounds like. | Force one preset per genre. Genre is never chosen by the user in Auto mode. |
+| **Track adaptation** | Decides how much enhancement the actual recording needs. | Try to make all tracks sound alike. |
+| **Safety clamp** | Limits gain, adjacent-band difference and total headroom. | Know or care which layer produced the vector. |
+
+### Band layout
+
+The 31 bands are assumed to be ISO one-third-octave centres from 20 Hz to 20 kHz. The exact bands, interpolation and filter semantics that Equalizer APO applies must be documented from experiment (task T2.0) before the training simulator is built, because the training simulator must match them.
+
+---
+
+## 5. Fallback Chain
+
+| Condition | Behaviour | User-visible indicator |
+| :--- | :--- | :--- |
+| High neural confidence | Baseline + c · residual | "Adaptive EQ" |
+| Low neural confidence | Baseline only | "Adaptive EQ (baseline)" |
+| Neural model fails or is unavailable | Headphone correction + genre prior | "Correction only" |
+| Track cannot be identified | Headphone correction + generic genre EQ | "Track not recognised" |
+| Headphone unknown | Neutral correction | "Headphone not recognised" |
+| Everything unavailable | Neutral (0 dB) | "Neutral (no data)" |
+
+The user is always shown which layer is active and why. Failure is never silent.
+
+---
+
+## 6. Gate 0: Audio Tap Placement
+
+The WASAPI loopback tap may observe the audio before or after Equalizer APO. The documentation is not relied on; the position is established by experiment (`GATE0_PROTOCOL.md`).
+
+| Outcome | Consequence |
+| :--- | :--- |
+| **Tap is pre-EQ** | Analysis sees the unmodified signal. No compensation is needed. |
+| **Tap is post-EQ** | Either find a pre-EQ tap, or compensate explicitly by subtracting the known applied response before analysis. |
+| **Neither is reliable** | Adaptive behaviour is blocked. The product falls back to metadata-only priors. |
+
+No stage after stage 3 of the pipeline is built until Gate 0 has passed with recorded evidence.
+
+---
+
+## 7. Modules
+
+| Module | Technology | Responsibility | Status |
+| :--- | :--- | :--- | :--- |
+| **Tauri shell** | Tauri, Rust | Window, IPC, OS integration | Scaffolded |
+| **Media session service** | Rust `windows` crate (Media_Control, Storage_Streams, Foundation) | GSMTC track metadata | Planned (T1.2) |
+| **Device service** | Rust | Output device detection | Planned (T1.3) |
+| **Loopback capture** | Rust, WASAPI | PCM tap | Stubbed; gated by Gate 0 |
+| **Feature extractor** | Rust | Rolling spectral features | Planned (T2.2) |
+| **`eqDecisionEngine`** | Rust (`services/`) | Composition, clamp, fallback | Planned (T2.3, T3.3) |
+| **APO writer** | Rust | Writes the Equalizer APO config | Planned (T2.1) |
+| **Frontend** | React, TypeScript, Vite | Auto/manual/describe UI, 31-band display, status | MVP demo with mock data |
+| **Backend** | Python, FastAPI (modular monolith) | Metadata resolution, ML inference, RAG assistant, feedback intake | Planned |
+| **Local cache** | SQLite | EQ per track + headphone + EQ version + model version | Planned (T4.1) |
+
+---
+
+## 8. Data Flow and Privacy
+
+| Data | Leaves the device? | Purpose | Note |
+| :--- | :--- | :--- | :--- |
+| **Raw audio / PCM** | **Never** | Local analysis only | Core privacy rule |
+| **Track metadata strings** | Yes | Genre/subgenre lookup | Title, artist, album |
+| **Derived features / embeddings** | Yes, if neural inference runs in the cloud | Prediction | See open risk below |
+| **EQ vectors** | Yes, if sync is enabled | Preference sync | Account required |
+| **Feedback events** | Only with consent | Model improvement | Manual EQ changes, explicit A/B |
+
+> **Open item.** Derived features are not raw audio, but "features are not audio" should not be assumed to mean "features reveal nothing". How reversible the transmitted features are has not been assessed. This matters if neural inference runs in the cloud (D-01).
+
+---
+
+## 9. Caching
+
+The local cache key is `(track identity, headphone profile, EQ version, model version)`. A change to any element invalidates the entry, so a model upgrade does not serve a stale EQ.
+
+| Property | Provisional value | Source |
+| :--- | :--- | :--- |
+| **Entries kept** | 1,000 tracks | PV-07 |
+| **Expiry** | 90 days | PV-07 |
+| **Approximate size** | Under 10 MB at about 2 KB per profile | Estimate |
+| **User control** | A "Clear cache" action in settings | Planned |
+
+---
+
+## 10. Failure Modes
+
+| Failure | Likely cause | Detection | Behaviour |
+| :--- | :--- | :--- | :--- |
+| **EQ oscillation** | Tap sees post-EQ audio | Rising gain drift; analysis correlates with own output | Freeze vector, fall back to correction only |
+| **Silence or glitch on switch** | Abrupt coefficient change | Transition test | Crossfade and slew limit (FR-07) |
+| **Wrong genre** | Ambiguous metadata match | Confidence score below threshold | Generic genre EQ |
+| **APO config rejected** | Syntax error or locked file | Write verification | Retain previous vector, show error |
+| **APO not installed or broken by a Windows update** | Third-party dependency | Startup and periodic check | Guided reinstall |
+| **Backend unreachable** | Network | Timeout | Offline behaviour (section 5) |
+| **Train/serve mismatch** | Feature extractor drift | Parity test in CI | Block the release |
+| **Exclusive-mode app** | Application bypasses the audio engine | Detected state or user report | Documented as unsupported |
+
+---
+
+## 11. Technology Decisions
+
+| Decision | Choice | Rationale | Alternatives considered |
+| :--- | :--- | :--- | :--- |
+| **Desktop shell** | Tauri | Small footprint, Rust core | Electron |
+| **Windows audio and media APIs** | Rust `windows` crate | Direct access to Media_Control and WASAPI | `cpal` |
+| **`cpal`** | Removed | Caused a `windows-core` dependency conflict | — |
+| **Backend** | Python / FastAPI modular monolith | Fits the ML toolchain; no microservices | Node.js, Rust |
+| **EQ application** | Equalizer APO | System-wide, free, scriptable | Custom APO (long term), virtual audio device |
+| **Local store** | SQLite | Small, embedded | — |
+| **Model runtime** | ONNX Runtime if local | Portable export | Cloud inference |
+
+---
+
+## 12. Limitations and Open Work
+
+| Open item | Status | Current state | What closes it |
+| :--- | :--- | :--- | :--- |
+| **Loopback tap position** | **Gated** | Unknown | Gate 0 evidence |
+| **Neural inference placement** | **Open** | Cloud and local both described | Decision D-01 after the restoration experiment |
+| **APO 31-band semantics** | **Open** | Assumed ISO third-octave bands | Documented experiment (T2.0) |
+| **Latency budgets** | **Planned** | Provisional only | Measurement per stage |
+| **Feature reversibility** | **Open** | Not assessed | Privacy review |
+| **Installer and APO onboarding** | **Open** | Not designed | Decision D-03 |
+| **Describe mode design** | **Open** | Principle only (bounded constraints) | Decision D-02 |
+| **Code signing** | **Planned** | Not started | Certificate and signing pipeline |
+| **Custom APO** | **Not planned for V1** | Dependency on Equalizer APO accepted | Revisit for V2 |
+
+---
+
+## Appendix A. Decision Log
+
+| ID | Decision | Date | Status |
+| :--- | :--- | :--- | :--- |
+| **ADR-01** | Use Equalizer APO, not a custom audio path | v0.1 | Accepted |
+| **ADR-02** | Cloud-first with a small local cache; baseline works offline | v0.1, refined v0.2 | Accepted |
+| **ADR-03** | Modular monolith backend, no microservices | v0.1 | Accepted |
+| **ADR-04** | EQ composed from three layers with a final clamp | v0.2 | Accepted, to be tested |
+| **ADR-05** | Neural model predicts a residual on the baseline, not 31 gains from scratch | v0.2 | Accepted |
+| **ADR-06** | Gate 0 is a hard stop proven by experiment, not documentation | v0.2 | Accepted |
+| **ADR-07** | Remove `cpal`; use the Rust `windows` crate | v0.2 | Accepted |
+| **ADR-08** | Neural inference placement | — | **Open** |

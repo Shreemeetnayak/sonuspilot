@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "desktop",
-        "width": 800,
-        "height": 600
+        "title": "SonusPilot",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 900,
+        "minHeight": 600
       }
     ],
     "security": {
@@ -23,13 +25,27 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "shortDescription": "Adaptive system-wide EQ for Windows",
+    "longDescription": "SonusPilot reads the currently playing track from Windows, resolves a reference curve for its genre, applies headphone correction where a measurement profile exists, and writes the result to Equalizer APO as a 31-band graphic EQ.",
+    "windows": {
+      "nsis": {
+        "installMode": "perMachine",
+        "languages": [
+          "English"
+        ],
+        "displayLanguageSelector": false
+      }
+    }
   }
 }
