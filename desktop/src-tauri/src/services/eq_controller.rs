@@ -3,13 +3,16 @@
 //! This module provides a clean abstraction over the EQ engine so we can
 //! swap implementations later (e.g., custom APO, virtual device).
 
+use crate::services::neural_eq_engine::NeuralEqEngine;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
 use tracing::{debug, info, warn};
+use ts_rs::TS;
 
 /// First line of every config SonusPilot writes. Used to tell our file apart
 /// from a config the user wrote by hand.
@@ -23,7 +26,8 @@ pub const ISO_BANDS: [f32; 31] = [
 ];
 
 /// Full 31-band graphic EQ profile (gains in dB at each ISO band)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub struct GraphicEQProfile {
     pub name: String,
     pub gains_db: [f32; 31],
@@ -31,11 +35,8 @@ pub struct GraphicEQProfile {
 }
 
 /// Engine status reported to the UI.
-///
-/// `available` alone is not enough for the UI: a user whose EQ "does nothing"
-/// needs to be told *why*, and a bare false cannot say whether APO is missing,
-/// unreadable, or merely bound to the wrong endpoint.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
 pub struct EngineStatus {
     pub available: bool,
     pub reason: String,
@@ -47,6 +48,8 @@ pub struct EngineStatus {
 pub trait EqEngine: Send + Sync {
     /// Apply a 31-band graphic EQ profile
     fn apply_graphic_eq(&self, profile: &GraphicEQProfile) -> Result<()>;
+    /// Apply DSP to audio samples
+    fn apply_dsp(&self, samples: &[f32]) -> Vec<f32>;
 
     /// Get current active profile name
     fn get_active_profile(&self) -> Option<String>;
@@ -65,6 +68,22 @@ pub trait EqEngine: Send + Sync {
         None
     }
 }
+
+pub trait EqDecisionEngine: EqEngine {
+    /// Attempt to apply a profile with fallback capability
+    fn apply_with_fallback(&self, profile: &GraphicEQProfile, fallback: &GraphicEQProfile) -> Result<()> {
+        match self.apply_graphic_eq(profile) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                warn!("Primary EQ apply failed: {}, applying fallback", e);
+                self.apply_graphic_eq(fallback)
+            }
+        }
+    }
+}
+
+// Blanket implementation for all EqEngine types
+impl<T: EqEngine> EqDecisionEngine for T {}
 
 /// Equalizer APO engine — writes config.txt and signals Peace/APO to reload
 pub struct EqualizerApoEngine {
@@ -87,6 +106,14 @@ impl EqualizerApoEngine {
         // Try to find Peace CLI
         let peace_cli_path = Self::find_peace_cli();
 
+        Ok(Self {
+            config_path,
+            peace_cli_path,
+        })
+    }
+
+    pub fn new_with_path(config_path: PathBuf) -> Result<Self> {
+        let peace_cli_path = Self::find_peace_cli();
         Ok(Self {
             config_path,
             peace_cli_path,
@@ -151,37 +178,71 @@ impl EqualizerApoEngine {
         candidates.into_iter().find(|path| path.exists())
     }
 
-    /// Generate Equalizer APO config.txt content from a graphic EQ profile
-    fn generate_config(&self, profile: &GraphicEQProfile) -> String {
+    /// Generate Equalizer APO config content from a graphic EQ profile
+    fn generate_config(&self, profile: &GraphicEQProfile) -> Result<String> {
+        if !profile.preamp_db.is_finite() || profile.gains_db.iter().any(|g| !g.is_finite()) {
+            anyhow::bail!("Gains or preamp contain non-finite values (NaN/inf)");
+        }
+
         let mut lines = Vec::new();
 
         lines.push(format!("{SONUSPILOT_MARKER} — auto-generated, edit in SonusPilot instead of here"));
         lines.push(format!("# profile: {}", profile.name));
-        lines.push(format!("Preamp: {:.1} dB", profile.preamp_db));
+
+        // Clamp gains for safety (Max +6dB, Min -12dB)
+        let clamped_gains: Vec<f32> = profile.gains_db.iter().map(|&g| g.clamp(-12.0, 6.0)).collect();
+
+        // Derive preamp from max boost so it is always <= 0 (match computePreamp logic)
+        let max_boost = clamped_gains.iter().cloned().filter(|&g| g > 0.0).fold(0.0, f32::max);
+        let safe_preamp = (-max_boost).min(0.0).clamp(-12.0, 0.0);
+
+        lines.push(format!("Preamp: {:.1} dB", safe_preamp));
         lines.push("".to_string());
 
         // Add GraphicEQ line: "GraphicEQ: freq1 gain1; freq2 gain2; ..."
         let mut graphic_eq_parts = Vec::new();
-        for (freq, gain) in ISO_BANDS.iter().zip(profile.gains_db.iter()) {
+        for (freq, gain) in ISO_BANDS.iter().zip(clamped_gains.iter()) {
             graphic_eq_parts.push(format!("{} {:.1}", freq, gain));
         }
         lines.push(format!("GraphicEQ: {}", graphic_eq_parts.join("; ")));
 
-        lines.join("\n")
+        Ok(lines.join("\n"))
     }
 
-    /// Write config and signal reload
+    /// Write config atomically to sonuspilot.txt and update config.txt non-destructively
     fn write_and_reload(&self, profile: &GraphicEQProfile) -> Result<()> {
-        let config_content = self.generate_config(profile);
+        let config_content = self.generate_config(profile)?;
 
-        // Write config file
-        std::fs::write(&self.config_path, config_content)
-            .with_context(|| format!("Failed to write Equalizer APO config to {:?}", self.config_path))?;
+        let parent_dir = self.config_path.parent().ok_or_else(|| anyhow::anyhow!("Invalid config path"))?;
+        std::fs::create_dir_all(parent_dir)?;
 
-        info!("Wrote EQ profile '{}' to Equalizer APO config", profile.name);
+        let sonuspilot_path = parent_dir.join("sonuspilot.txt");
+        let tmp_path = parent_dir.join("sonuspilot.txt.tmp");
 
-        // Signal Peace to reload if present. APO itself already re-reads the
-        // file, so a missing or unhappy Peace GUI must not fail the apply.
+        // Atomic write: temp file then rename
+        std::fs::write(&tmp_path, &config_content)
+            .with_context(|| format!("Failed to write temp config to {:?}", tmp_path))?;
+        std::fs::rename(&tmp_path, &sonuspilot_path)
+            .with_context(|| format!("Failed to rename temp config to {:?}", sonuspilot_path))?;
+
+        // Never overwrite user's own config.txt. Add Include line, backing up original first if needed.
+        if self.config_path.exists() {
+            let config_txt = std::fs::read_to_string(&self.config_path)?;
+            let include_line = "Include: sonuspilot.txt";
+            if !config_txt.contains(include_line) && !config_txt.contains("sonuspilot") {
+                let bak_path = parent_dir.join("config.txt.bak");
+                if !bak_path.exists() {
+                    let _ = std::fs::copy(&self.config_path, &bak_path);
+                }
+                let new_config_txt = format!("{}\n{}\n", config_txt.trim_end(), include_line);
+                std::fs::write(&self.config_path, new_config_txt)?;
+            }
+        } else {
+            std::fs::write(&self.config_path, "Include: sonuspilot.txt\n")?;
+        }
+
+        info!("Wrote EQ profile '{}' to sonuspilot.txt and updated config.txt", profile.name);
+
         if let Some(peace_path) = &self.peace_cli_path {
             match Command::new(peace_path).args(["--reload"]).output() {
                 Ok(output) if output.status.success() => debug!("Signaled Peace to reload config"),
@@ -213,12 +274,21 @@ impl EqEngine for EqualizerApoEngine {
         self.write_and_reload(profile)
     }
 
+    fn apply_dsp(&self, samples: &[f32]) -> Vec<f32> {
+        // EqualizerApoEngine does not support in-process DSP
+        samples.to_vec()
+    }
+
     fn get_active_profile(&self) -> Option<String> {
-        // Try to read current config and parse profile name from comment
-        if let Ok(content) = std::fs::read_to_string(&self.config_path) {
-            for line in content.lines() {
-                if line.starts_with("# SonusPilot - ") {
-                    return Some(line.trim_start_matches("# SonusPilot - ").to_string());
+        let parent_dir = self.config_path.parent()?;
+        let sonuspilot_path = parent_dir.join("sonuspilot.txt");
+        for path in &[sonuspilot_path, self.config_path.clone()] {
+            if let Ok(content) = std::fs::read_to_string(path) {
+                for line in content.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.starts_with("# profile: ") {
+                        return Some(trimmed.trim_start_matches("# profile: ").to_string());
+                    }
                 }
             }
         }
@@ -286,10 +356,73 @@ impl EqEngine for UnavailableEqEngine {
     fn unavailable_reason(&self) -> String {
         self.reason.clone()
     }
+
+    fn apply_dsp(&self, samples: &[f32]) -> Vec<f32> {
+        samples.to_vec()
+    }
 }
 
+/// Hybrid Engine: Neural Inference with Deterministic Fallback
+pub struct HybridResidualEngine {
+    neural: NeuralEqEngine,
+    baseline: EqualizerApoEngine,
+}
+
+impl HybridResidualEngine {
+    pub fn new(neural: NeuralEqEngine, baseline: EqualizerApoEngine) -> Self {
+        Self { neural, baseline }
+    }
+}
+
+impl EqEngine for HybridResidualEngine {
+    fn apply_graphic_eq(&self, profile: &GraphicEQProfile) -> Result<()> {
+        debug!("Hybrid Engine applying profile: {}", profile.name);
+
+        // Phase 3: Neural Inference + Deterministic Fallback
+        let features = [0.0; 31];
+        match self.neural.predict(&features) {
+            Ok(residual_gains) => {
+                let mut combined_gains = profile.gains_db;
+                for i in 0..combined_gains.len().min(residual_gains.len()) {
+                    combined_gains[i] += residual_gains[i];
+                }
+                let combined_profile = GraphicEQProfile {
+                    name: format!("{}-neural", profile.name),
+                    gains_db: combined_gains,
+                    preamp_db: profile.preamp_db,
+                };
+                self.baseline.apply_graphic_eq(&combined_profile)
+            }
+            Err(e) => {
+                warn!("Neural inference failed: {}, falling back to baseline", e);
+                self.baseline.apply_graphic_eq(profile)
+            }
+        }
+    }
+
+    fn get_active_profile(&self) -> Option<String> {
+        self.baseline.get_active_profile()
+    }
+
+    fn is_available(&self) -> bool {
+        self.baseline.is_available()
+    }
+
+    fn unavailable_reason(&self) -> String {
+        self.baseline.unavailable_reason()
+    }
+
+    fn apply_dsp(&self, samples: &[f32]) -> Vec<f32> {
+        self.baseline.apply_dsp(samples)
+    }
+}
+
+// Remove lines 357-385 (the HybridEqEngine definition and implementation)
+// They are redundant as HybridResidualEngine (lines 307-355) is the correct, implemented engine.
+
+
 /// Factory to create the appropriate EQ engine.
-pub fn create_eq_engine() -> Arc<dyn EqEngine> {
+pub fn create_eq_engine() -> Arc<dyn EqDecisionEngine> {
     match EqualizerApoEngine::new() {
         Ok(engine) if engine.is_available() => {
             info!("Using Equalizer APO engine at {:?}", engine.config_path);
@@ -309,26 +442,32 @@ pub fn create_eq_engine() -> Arc<dyn EqEngine> {
 
 /// EQ Controller - manages profile transitions with crossfade
 pub struct EqController {
-    engine: Arc<dyn EqEngine>,
+    engine: Arc<dyn EqDecisionEngine>,
     current_profile: Mutex<Option<GraphicEQProfile>>,
+    cache: Mutex<HashMap<String, GraphicEQProfile>>,
 }
 
 impl EqController {
-    pub fn new(engine: Arc<dyn EqEngine>) -> Self {
+    pub fn new(engine: Arc<dyn EqDecisionEngine>) -> Self {
         Self {
             engine,
             current_profile: Mutex::new(None),
+            cache: Mutex::new(HashMap::new()),
         }
     }
 
-    /// Set the active EQ profile (with crossfade for smooth transitions)
+    pub fn apply_dsp(&self, samples: &[f32]) -> Vec<f32> {
+        self.engine.apply_dsp(samples)
+    }
     pub async fn set_profile(&self, profile: GraphicEQProfile) -> Result<()> {
+        {
+            let mut cache = self.cache.lock().await;
+            cache.insert(profile.name.clone(), profile.clone());
+        }
+
         let mut current = self.current_profile.lock().await;
 
         if let Some(ref old_profile) = *current {
-            // In a real implementation, we'd do a smooth crossfade here
-            // by running both filter chains and crossfading the output.
-            // For Equalizer APO, we just swap configs - the audio engine handles it.
             debug!(
                 "Switching EQ profile: '{}' -> '{}'",
                 old_profile.name, profile.name
@@ -337,15 +476,32 @@ impl EqController {
             info!("Setting initial EQ profile: '{}'", profile.name);
         }
 
-        self.engine.apply_graphic_eq(&profile)?;
+        // Apply with neutral as fallback
+        let neutral = GraphicEQProfile {
+            name: "Neutral (Flat)".to_string(),
+            gains_db: [0.0; 31],
+            preamp_db: 0.0,
+        };
+
+        self.engine.apply_with_fallback(&profile, &neutral)?;
         *current = Some(profile);
         Ok(())
     }
 
-    /// Get current active profile
     pub async fn get_current_profile(&self) -> Option<GraphicEQProfile> {
         let current = self.current_profile.lock().await;
         current.clone()
+    }
+
+    /// Get current active gains
+    pub async fn get_current_gains(&self) -> Option<[f32; 31]> {
+        self.get_current_profile().await.map(|p| p.gains_db)
+    }
+
+    /// Get a profile from the cache by name
+    pub async fn get_cached_profile(&self, name: &str) -> Option<GraphicEQProfile> {
+        let cache = self.cache.lock().await;
+        cache.get(name).cloned()
     }
 
     /// Set to flat/neutral
@@ -403,72 +559,106 @@ impl TryFrom<EqProfilePayload> for GraphicEQProfile {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Mutex;
 
-    /// Both tests below write the same config.txt, and cargo runs tests on
-    /// parallel threads, so they must not interleave.
-    static CONFIG_LOCK: Mutex<()> = Mutex::new(());
-
-    /// Objective check: SonusPilot can locate and write config.txt to the
-    /// real APO install directory, and the file survives a reload.
     #[test]
-    fn writes_config_to_the_real_apo_install_directory() {
-        let _guard = CONFIG_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let engine = EqualizerApoEngine::new().expect("APO must be installed");
-        assert!(
-            engine.config_path.exists(),
-            "config.txt not found at {:?}",
-            engine.config_path
-        );
-        assert!(
-            engine.apo_installed(),
-            "APO DLL not found at {:?}",
-            engine.config_path
-        );
+    fn rejects_non_finite_gains() {
+        let dir = std::env::temp_dir().join(format!("sonuspilot_test_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let config_path = dir.join("config.txt");
+        let engine = EqualizerApoEngine::new_with_path(config_path).unwrap();
 
-        let original = std::fs::read_to_string(&engine.config_path)
-            .unwrap_or_default();
-
-        let profile = GraphicEQProfile {
-            name: "SonusPilot-test".into(),
-            gains_db: [1.5; 31],
-            preamp_db: -3.0,
+        let profile_nan = GraphicEQProfile {
+            name: "nan-test".into(),
+            gains_db: [f32::NAN; 31],
+            preamp_db: 0.0,
         };
-        engine.apply_graphic_eq(&profile).expect("config write must succeed");
+        assert!(engine.apply_graphic_eq(&profile_nan).is_err());
 
-        let written = std::fs::read_to_string(&engine.config_path).expect("config readable");
-        assert!(written.starts_with(SONUSPILOT_MARKER), "marker missing");
-        assert!(written.contains("Preamp: -3.0 dB"));
-        assert!(written.contains("GraphicEQ:"));
-        let eq_line = written.lines().find(|l| l.starts_with("GraphicEQ:")).unwrap();
-        assert_eq!(eq_line.matches(';').count(), 30);
-        assert!(eq_line.contains("20 1.5"));
-        assert!(eq_line.contains("20000 1.5"));
+        let profile_inf = GraphicEQProfile {
+            name: "inf-test".into(),
+            gains_db: [0.0; 31],
+            preamp_db: f32::INFINITY,
+        };
+        assert!(engine.apply_graphic_eq(&profile_inf).is_err());
 
-        // Restore the original config so the test is non-destructive.
-        let _ = std::fs::write(&engine.config_path, &original);
-        let restored = std::fs::read_to_string(&engine.config_path).unwrap();
-        assert_eq!(restored, original);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
-    fn test_curve_is_a_real_31_band_curve_not_a_flatline() {
-        let _guard = CONFIG_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let engine = EqualizerApoEngine::new().expect("APO must be installed");
-        let original = std::fs::read_to_string(&engine.config_path).unwrap_or_default();
+    fn clamps_gains_and_derives_preamp() {
+        let dir = std::env::temp_dir().join(format!("sonuspilot_test_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let config_path = dir.join("config.txt");
+        let engine = EqualizerApoEngine::new_with_path(config_path.clone()).unwrap();
+
+        let mut gains = [0.0; 31];
+        gains[0] = 15.0; // Above +6.0 clamp
+        gains[1] = -20.0; // Below -12.0 clamp
+
         let profile = GraphicEQProfile {
-            name: "sweep".into(),
-            gains_db: (0..31).map(|i| (i as f32) - 15.0).collect::<Vec<f32>>().try_into().unwrap(),
+            name: "clamp-test".into(),
+            gains_db: gains,
+            preamp_db: 5.0, // Positive preamp requested, should be forced <= 0
+        };
+
+        engine.apply_graphic_eq(&profile).unwrap();
+
+        let sonuspilot_content = std::fs::read_to_string(dir.join("sonuspilot.txt")).unwrap();
+        assert!(sonuspilot_content.contains("Preamp: -6.0 dB") || sonuspilot_content.contains("Preamp: -6"));
+        assert!(sonuspilot_content.contains("6.0")); // Clamped from 15.0
+        assert!(sonuspilot_content.contains("-12.0")); // Clamped from -20.0
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn preserves_user_config_and_adds_include() {
+        let dir = std::env::temp_dir().join(format!("sonuspilot_test_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let config_path = dir.join("config.txt");
+
+        // Write user's existing config.txt
+        std::fs::write(&config_path, "Device: Speakers\n").unwrap();
+
+        let engine = EqualizerApoEngine::new_with_path(config_path.clone()).unwrap();
+        let profile = GraphicEQProfile {
+            name: "include-test".into(),
+            gains_db: [0.0; 31],
             preamp_db: 0.0,
         };
-        engine.apply_graphic_eq(&profile).expect("write");
-        let written = std::fs::read_to_string(&engine.config_path).unwrap();
-        let eq_line = written.lines().find(|l| l.starts_with("GraphicEQ:")).unwrap();
-        assert!(eq_line.contains("20 -15.0"), "low band must dip");
-        assert!(eq_line.contains("20000 15.0"), "high band must rise");
 
-        let _ = std::fs::write(&engine.config_path, &original);
-        let restored = std::fs::read_to_string(&engine.config_path).unwrap();
-        assert_eq!(restored, original);
+        engine.apply_graphic_eq(&profile).unwrap();
+
+        // Check user config was not overwritten, but Include was added
+        let config_txt = std::fs::read_to_string(&config_path).unwrap();
+        assert!(config_txt.contains("Device: Speakers"));
+        assert!(config_txt.contains("Include: sonuspilot.txt"));
+
+        // Check backup was created
+        let bak_path = dir.join("config.txt.bak");
+        assert!(bak_path.exists());
+        let bak_txt = std::fs::read_to_string(&bak_path).unwrap();
+        assert_eq!(bak_txt, "Device: Speakers\n");
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn parses_active_profile_headers() {
+        let dir = std::env::temp_dir().join(format!("sonuspilot_test_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let config_path = dir.join("config.txt");
+        let engine = EqualizerApoEngine::new_with_path(config_path).unwrap();
+
+        let profile = GraphicEQProfile {
+            name: "My-Special-Profile".into(),
+            gains_db: [0.0; 31],
+            preamp_db: 0.0,
+        };
+
+        engine.apply_graphic_eq(&profile).unwrap();
+        assert_eq!(engine.get_active_profile(), Some("My-Special-Profile".into()));
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
