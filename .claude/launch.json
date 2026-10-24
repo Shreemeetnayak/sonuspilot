@@ -2,11 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "SonusPilot Dev",
+      "name": "sonuspilot-ui",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 1420,
-      "cwd": "C:\\Users\\KIIT0001\\Desktop\\SonusPilot\\desktop"
+      "runtimeArgs": ["--prefix", "desktop", "run", "dev", "--", "--port", "5174", "--strictPort"],
+      "port": 5174
     }
   ]
 }

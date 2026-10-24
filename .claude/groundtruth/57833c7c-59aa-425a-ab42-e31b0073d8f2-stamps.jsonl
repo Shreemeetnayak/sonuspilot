@@ -1,0 +1,5 @@
+{"ts":1791790528619,"cmd":"cd desktop/src-tauri && cargo check 2>&1 | tee build_errors.txt","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}
+{"ts":1791791221079,"cmd":"cargo check --bin dataset_builder --verbose 2>&1 | head -100","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}
+{"ts":1791791916536,"cmd":"cargo check 2>&1 | head -100","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}
+{"ts":1791793014350,"cmd":"cargo check --bin dataset_builder","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}
+{"ts":1791797000710,"cmd":"cd desktop/src-tauri && cargo check --bin dataset_builder","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"2f7b7b59a1047d8b0afae402a9bc54989ca3e0b54a55be088242f67485deb511"}

@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import "./Equalizer31Band.css";
-import { getBestEQForContext, addUserFeedback, FeedbackRating, type UserFeedback, type TastePreferences } from "../services/cloudEqService";
+import { type FeedbackRating } from "../services/cloudEqService";
+import { getLearnedIndicators, applyFeedback, getLearnedProfiles, saveLearnedProfile } from "../services/learningService";
+import { SoundFeedbackButtons } from "./SoundFeedbackButtons";
 
 // ── ISO 266 31-band center frequencies (Hz) ───────────────────────────
 export const ISO_BANDS: number[] = [
@@ -41,8 +43,10 @@ export interface TastePreferences {
   presence: boolean;       // +1dB @ 3k-6kHz
   subBass: boolean;        // +2dB @ 20-40Hz
 }
+// Subgenre weight interface
+export interface SubgenreWeight { name: string; weight: number; }
 
-const DEFAULT_TASTE: TastePreferences = {
+export const DEFAULT_TASTE: TastePreferences = {
   bassBoost: false,
   vocalClarity: false,
   trebleAir: false,
@@ -52,7 +56,7 @@ const DEFAULT_TASTE: TastePreferences = {
 };
 
 // Gain offsets applied per band when taste is enabled
-const TASTE_OFFSETS: Record<keyof TastePreferences, number[]> = {
+export const TASTE_OFFSETS: Record<keyof TastePreferences, number[]> = {
   bassBoost:      [0, 0, 2, 2, 2, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   vocalClarity:   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1, 1.5, 1.5, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   trebleAir:      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1, 1.5, 1.5, 1, 0.5, 0, 0],
@@ -75,7 +79,7 @@ export const TASTE_LABELS: Record<keyof TastePreferences, string> = {
 const NEUTRAL_GAINS: number[] = new Array(31).fill(0);
 
 // ── Demo preset shapes (illustrative, not authoritative) ──────────────
-const BUILTIN_PRESET_GAINS: Record<BuiltinPresetName, number[]> = {
+export const BUILTIN_PRESET_GAINS: Record<BuiltinPresetName, number[]> = {
   "Dream Pop": [
     0, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5, -0.5, -0.5,
     -1, -1, -0.5, 0, 0, 0.5, 1, 1, 1.5, 1.5,
@@ -204,10 +208,12 @@ interface Equalizer31BandProps {
   onModeChange: (mode: EQMode) => void;
   onGainsChange?: (gains: number[]) => void;
   onFeedback?: (rating: FeedbackRating) => void;
+  /** Lifts the taste layer up so the decision engine can weight it. */
+  onTasteChange?: (taste: TastePreferences) => void;
   activeProfile?: string;
   headphoneId?: string;
   genre?: string;
-  subgenres?: string[];
+  subgenres?: SubgenreWeight[];
 }
 
 export default function Equalizer31Band({
@@ -216,12 +222,15 @@ export default function Equalizer31Band({
   onModeChange,
   onGainsChange,
   onFeedback,
+  onTasteChange,
   activeProfile = "—",
   headphoneId = "",
   genre = "",
-  subgenres = [] as string[],
+  subgenres = [] as SubgenreWeight[],
 }: Equalizer31BandProps) {
-  const [gains, setGains] = useState<number[]>(NEUTRAL_GAINS);
+    const [gains, setGains] = useState<number[]>(NEUTRAL_GAINS);
+  // subgenres available for future classification
+  void subgenres;
   const [activePreset, setActivePreset] = useState<BuiltinPresetName | null>(null);
   const [taste, setTaste] = useState<TastePreferences>(DEFAULT_TASTE);
 
@@ -263,8 +272,12 @@ export default function Equalizer31Band({
   }, [mode, externalGains]);
 
   const handleTasteToggle = useCallback((key: keyof TastePreferences) => {
-    setTaste((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
+    setTaste((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      onTasteChange?.(next);
+      return next;
+    });
+  }, [onTasteChange]);
 
   const handleBandChange = useCallback(
     (index: number, value: number) => {
@@ -346,6 +359,24 @@ export default function Equalizer31Band({
             </label>
           ))}
         </div>
+
+        <SoundFeedbackButtons
+            onFeedback={async (type) => {
+                const profileId = activeProfile || "default";
+                const profiles = getLearnedProfiles();
+                const state = profiles[profileId] || {
+                    profileId,
+                    headphoneId: activeProfile || "unknown",
+                    genre: "all",
+                    learnedGains: new Array(31).fill(0),
+                    sampleCount: 0,
+                    updatedAt: Date.now()
+                };
+                const updated = await applyFeedback(state, type, state.learnedGains);
+                saveLearnedProfile(updated);
+                setGains(updated.learnedGains);
+            }}
+        />
       </div>
 
       {/* EQ body */}
@@ -408,6 +439,10 @@ export default function Equalizer31Band({
       {/* Feedback strip - "ChatGPT-like" natural language EQ feedback */}
       {(mode === "auto" || mode === "manual") && onFeedback && headphoneId && genre && (
         <div className="feedback-strip" role="group" aria-label="Sound quality feedback">
+          <div className="learning-indicator">
+            <span className="indicator-dot" />
+            <span className="indicator-text">Learned: {getLearnedIndicators(headphoneId).active ? "Active" : "Learning"}</span>
+          </div>
           <div className="feedback-strip__label">How does it sound?</div>
           <div className="feedback-buttons">
             {([

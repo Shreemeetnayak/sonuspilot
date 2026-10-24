@@ -1,0 +1,6 @@
+{"ts":1790316759769,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | head -30","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}
+{"ts":1790318816959,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | head -30","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}
+{"ts":1790318947419,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | tail -40","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}
+{"ts":1790318998355,"cmd":"npm run build 2>&1 | head -15","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}
+{"ts":1790319025681,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | head -20","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}
+{"ts":1790319051714,"cmd":"cd \"/c/Users/KIIT0001/Desktop/SonusPilot/desktop\" && npm run build 2>&1 | head -20","head":"30d51615fc505074d8f240021b02017f129476b4","tree":"678f8b3c06594e773a5e9a7a7fe16fbc717db0d4109fa6fba9c725afe2cb88de"}

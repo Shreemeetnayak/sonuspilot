@@ -285,3 +285,23 @@
   background: var(--accent-glow);
   color: #a5b4fc;
 }
+
+/* Learning indicator */
+.learning-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+.indicator-text {
+  letter-spacing: 0.01em;
+}

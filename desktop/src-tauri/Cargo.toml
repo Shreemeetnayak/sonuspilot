@@ -1,6 +1,7 @@
 [package]
 name = "desktop"
 version = "0.1.0"
+default-run = "desktop"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -27,6 +28,11 @@ anyhow = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 async-trait = "0.1"
+rustfft = "6.1"
+num-complex = "0.4"
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+tar = "0.4"
+flate2 = "1.0"
 
 # Windows API bindings
 windows = { version = "0.61", features = [
@@ -36,5 +42,28 @@ windows = { version = "0.61", features = [
     "Foundation",
     "Foundation_Collections",
     "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
     "Win32_System_Com",
+    "Win32_System_Variant",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_Devices_Properties",
+    "Win32_System_Registry",
 ] }
+# tch = "0.26.0"
+
+[[bin]]
+name = "desktop"
+path = "src/main.rs"
+
+[[bin]]
+name = "dataset_builder"
+path = "src/bin/dataset_builder.rs"
+
+[[bin]]
+name = "live_training"
+path = "src/bin/live_training.rs"
+
+[[bin]]
+name = "artist_split"
+path = "src/bin/artist_split.rs"

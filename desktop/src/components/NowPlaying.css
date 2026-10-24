@@ -1,6 +1,6 @@
 /* ── Now Playing Card ────────────────────────────────────────────── */
 .nowplaying {
-  padding: 20px 16px 16px;
+  padding: 16px 16px 12px;
 }
 
 .nowplaying__artwork-wrap {
@@ -10,7 +10,7 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-elevated);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .nowplaying__artwork {
@@ -79,7 +79,7 @@
 
 .nowplaying__empty {
   text-align: center;
-  padding: 16px 0;
+  padding: 12px 0;
 }
 
 .nowplaying__empty-icon {

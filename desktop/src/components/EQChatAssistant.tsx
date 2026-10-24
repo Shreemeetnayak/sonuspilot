@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import "./EQChatAssistant.css";
-import { addUserFeedback, getUserFeedback, applyFeedbackCorrections, type UserFeedback, type FeedbackRating, type TastePreferences } from "../services/cloudEqService";
-import { ISO_BANDS, type TastePreferences as TastePreferencesType } from "./Equalizer31Band";
+import { addUserFeedback, getUserFeedback, applyFeedbackCorrections, type FeedbackRating } from "../services/cloudEqService";
+import { type TastePreferences as TastePreferencesType, type SubgenreWeight } from "./Equalizer31Band";
 
 /** Map natural language to feedback ratings */
 const FEEDBACK_KEYWORDS: Record<FeedbackRating, string[]> = {
@@ -74,12 +74,13 @@ interface ChatMessage {
 interface EQChatAssistantProps {
   headphoneId: string;
   genre: string;
-  subgenres: string[];
+  subgenres: SubgenreWeight[];
   baseGains: number[];
   baseTaste: TastePreferencesType;
   onGainsChange: (gains: number[]) => void;
-  onTasteChange?: (taste: TastePreferencesType) => void;
+
   isReadOnly?: boolean;
+  onClose?: () => void;
 }
 
 export default function EQChatAssistant({
@@ -89,8 +90,8 @@ export default function EQChatAssistant({
   baseGains,
   baseTaste,
   onGainsChange,
-  onTasteChange,
   isReadOnly = false,
+  onClose,
 }: EQChatAssistantProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -234,6 +235,20 @@ export default function EQChatAssistant({
           <span className="status-text">
             {feedbackHistory.length ? `${feedbackHistory.length} feedback${feedbackHistory.length > 1 ? "s" : ""} learned` : "Learning..."}
           </span>
+          {onClose && (
+            <button
+              type="button"
+              className="chat-close"
+              onClick={onClose}
+              aria-label="Close EQ Assistant"
+              title="Close"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

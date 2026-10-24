@@ -1,0 +1,3 @@
+{"ts":1791737659877,"cmd":"cd desktop/src-tauri && export LIBTORCH_BYPASS_VERSION_CHECK=1 && cargo clean && cargo check --bin dataset_builder","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"6ebdcaec9589200e43fc36a1509d696fd9062af3d602b8740d0a81e08262f922"}
+{"ts":1791740061846,"cmd":"cd desktop/src-tauri && cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}
+{"ts":1791741445338,"cmd":"cd desktop/src-tauri && cargo clean && cargo check --verbose","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"bf1553972623a2875783c2361b36ee43b877beb810b1f24cad8dcad2aa2135cb"}

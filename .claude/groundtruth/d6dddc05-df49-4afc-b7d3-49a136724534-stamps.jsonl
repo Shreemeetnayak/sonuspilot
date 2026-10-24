@@ -1,0 +1,11 @@
+{"ts":1791351484461,"cmd":"cd desktop/src-tauri && cargo check 2>&1 | head -n 50","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"e4d33db44cf5b0436ae6011a2498136d5c12aa685e2bead9ed0ca9344663e685"}
+{"ts":1791351634069,"cmd":"cd desktop/src-tauri && cargo check 2>&1 | grep -C 5 error","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"e4d33db44cf5b0436ae6011a2498136d5c12aa685e2bead9ed0ca9344663e685"}
+{"ts":1791352729982,"cmd":"cargo check --message-format=json | jq -r 'select(.message and .message.level == \"error\") | .message.rendered'","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"e4d33db44cf5b0436ae6011a2498136d5c12aa685e2bead9ed0ca9344663e685"}
+{"ts":1791353162365,"cmd":"cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"a1d8f2963b708711283ed23bec251d92aba716146a19db5fb73533d6d324e284"}
+{"ts":1791353286392,"cmd":"cargo build","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"a1d8f2963b708711283ed23bec251d92aba716146a19db5fb73533d6d324e284"}
+{"ts":1791353834494,"cmd":"cargo test","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"2815634aef3272d0746aaac599fda0652c4714f0cbdf0dc24bbdbbe165c1745d"}
+{"ts":1791354690515,"cmd":"cd desktop/src-tauri && cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"a1d8f2963b708711283ed23bec251d92aba716146a19db5fb73533d6d324e284"}
+{"ts":1791354855749,"cmd":"cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"488eb31e85381101e4b96a4521a916b5bde6286cef303722368e3e1d68cfa28a"}
+{"ts":1791354879370,"cmd":"cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"488eb31e85381101e4b96a4521a916b5bde6286cef303722368e3e1d68cfa28a"}
+{"ts":1791357546196,"cmd":"cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"488eb31e85381101e4b96a4521a916b5bde6286cef303722368e3e1d68cfa28a"}
+{"ts":1791360267931,"cmd":"cargo check","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"ac4e8f8deec1114eeb69dae47a7e0c11e236a923804fb9b55b921fe6999c4e38"}

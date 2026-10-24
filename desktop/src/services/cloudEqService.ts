@@ -1,4 +1,5 @@
-import { ISO_BANDS, BuiltinPresetName, BUILTIN_PRESET_GAINS, TastePreferences } from "../components/Equalizer31Band";
+import { ISO_BANDS, BuiltinPresetName, BUILTIN_PRESET_GAINS, TastePreferences, type SubgenreWeight } from "../components/Equalizer31Band";
+export type { TastePreferences, SubgenreWeight };
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -8,7 +9,7 @@ export interface CloudEQProfile {
   headphoneBrand: string;
   headphoneModel: string;
   genre: string;
-  subgenres: string[];
+  subgenres: { name: string; weight: number }[];
   basePreset: BuiltinPresetName;
   tasteOverrides: Partial<TastePreferences>;
   gains: number[];
@@ -23,7 +24,7 @@ export interface UserFeedback {
   headphoneId: string;
   trackId: string;
   genre: string;
-  subgenres: string[];
+  subgenres: { name: string; weight: number }[];
   baseGains: number[];
   taste: TastePreferences;
   rating: FeedbackRating;
@@ -42,78 +43,12 @@ const FEEDBACK_CORRECTIONS: Record<FeedbackRating, number[]> = {
   good: ISO_BANDS.map(() => 0), // No change - reinforces current profile
 };
 
-const CLOUD_API_BASE = import.meta.env.VITE_CLOUD_API_URL || "https://api.sonuspilot.dev";
-const CACHE_KEY = "sonuspilot-cloud-eq-cache";
+// Everything here is local. There is no remote profile service, so a curve is
+// only ever built from what this machine has measured and what the user has said.
 const FEEDBACK_KEY = "sonuspilot-user-feedback";
 const LEARNED_PROFILE_KEY = "sonuspilot-learned-profiles";
 
-// ── Cloud API ──────────────────────────────────────────────────────────────
-
-async function fetchFromCloud<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
-  try {
-    const res = await fetch(`${CLOUD_API_BASE}${endpoint}`, {
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      ...options,
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchHeadphoneProfiles(
-  headphoneId: string,
-  genre?: string
-): Promise<CloudEQProfile[]> {
-  const params = new URLSearchParams({ headphoneId });
-  if (genre) params.set("genre", genre);
-  return (await fetchFromCloud<CloudEQProfile[]>(`/eq/profiles?${params}`)) || [];
-}
-
-export async function fetchBestProfile(
-  headphoneId: string,
-  genre: string,
-  subgenres: string[]
-): Promise<CloudEQProfile | null> {
-  const profiles = await fetchHeadphoneProfiles(headphoneId, genre);
-  if (!profiles.length) return null;
-
-  // Score profiles by subgenre match + confidence + sample count
-  return profiles.reduce((best, p) => {
-    const subgenreMatch = subgenres.filter((s) => p.subgenres.includes(s)).length / Math.max(1, subgenres.length);
-    const score = p.confidence * 0.5 + subgenreMatch * 0.3 + Math.min(p.sampleCount / 100, 1) * 0.2;
-    const bestScore = best.confidence * 0.5 +
-      (subgenres.filter((s) => best.subgenres.includes(s)).length / Math.max(1, subgenres.length)) * 0.3 +
-      Math.min(best.sampleCount / 100, 1) * 0.2;
-    return score > bestScore ? p : best;
-  });
-}
-
-export async function submitFeedback(feedback: Omit<UserFeedback, "id" | "timestamp">): Promise<boolean> {
-  const payload = { ...feedback, id: crypto.randomUUID(), timestamp: Date.now() };
-  const res = await fetch(`${CLOUD_API_BASE}/eq/feedback`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return res.ok;
-}
-
-// ── Local Cache & Learning ────────────────────────────────────────────────
-
-export function getCachedProfiles(): CloudEQProfile[] {
-  try {
-    const stored = localStorage.getItem(CACHE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function cacheProfiles(profiles: CloudEQProfile[]): void {
-  localStorage.setItem(CACHE_KEY, JSON.stringify(profiles));
-}
+// ── Local Feedback & Learned Profiles ──────────────────────────────────────
 
 export function getUserFeedback(): UserFeedback[] {
   try {
@@ -141,6 +76,14 @@ export function getLearnedProfiles(): Record<string, CloudEQProfile> {
   } catch {
     return {};
   }
+}
+
+export function saveLearnedProfiles(all: Record<string, CloudEQProfile>): void {
+  localStorage.setItem(LEARNED_PROFILE_KEY, JSON.stringify(all));
+}
+export function clearLearnedData(): void {
+  localStorage.removeItem(FEEDBACK_KEY);
+  localStorage.removeItem(LEARNED_PROFILE_KEY);
 }
 
 export function saveLearnedProfile(key: string, profile: CloudEQProfile): void {
@@ -190,7 +133,7 @@ export function applyFeedbackCorrections(
 export function learnProfile(
   headphoneId: string,
   genre: string,
-  subgenres: string[],
+  subgenres: { name: string; weight: number }[],
   baseGains: number[],
   baseTaste: TastePreferences,
   feedbackHistory: UserFeedback[]
@@ -226,28 +169,51 @@ export function learnProfile(
 }
 
 /**
- * Get the best available EQ for current context (cloud + learned + builtin fallback)
+ * Get the best available EQ for the current context.
+ *
+ * Local-only: a learned profile this device has enough feedback for, otherwise
+ * the built-in preset. There is no third source to wait on, so this is
+ * synchronous — callers may still `await` it.
  */
-export async function getBestEQForContext(
+export function getBestEQForContext(
   headphoneId: string,
   genre: string,
-  subgenres: string[],
-  basePreset: BuiltinPresetName,
-  baseTaste: TastePreferences
-): Promise<{ gains: number[]; source: "cloud" | "learned" | "builtin"; profile?: CloudEQProfile }> {
-  // 1. Try cloud
-  const cloudProfile = await fetchBestProfile(headphoneId, genre, subgenres);
-  if (cloudProfile && cloudProfile.confidence > 0.3) {
-    return { gains: cloudProfile.gains, source: "cloud", profile: cloudProfile };
+  subgenres: { name: string; weight: number }[],
+  basePreset: BuiltinPresetName = "Dream Pop",
+  baseTaste: TastePreferences = {
+    bassBoost: false,
+    vocalClarity: false,
+    trebleAir: false,
+    warmth: false,
+    presence: false,
+    subBass: false,
   }
-
-  // 2. Try learned local profile
+): { gains: number[]; source: "learned" | "builtin"; profile?: CloudEQProfile } {
   const learned = getLearnedProfiles();
   const learnedKey = `${headphoneId}:${genre}`;
   if (learned[learnedKey] && learned[learnedKey].sampleCount >= 3) {
     return { gains: learned[learnedKey].gains, source: "learned", profile: learned[learnedKey] };
   }
 
-  // 3. Fall back to builtin preset
-  return { gains: BUILTIN_PRESET_GAINS[basePreset], source: "builtin" };
+  // 3. Builtin fallback with subgenres metadata preserved
+  const baseGains = BUILTIN_PRESET_GAINS[basePreset] || BUILTIN_PRESET_GAINS["Dream Pop"];
+  return {
+    gains: baseGains,
+    source: "builtin",
+    profile: {
+      id: `builtin-${headphoneId}-${genre}`,
+      headphoneId,
+      headphoneBrand: "",
+      headphoneModel: "",
+      genre,
+      subgenres: subgenres || [],
+      basePreset,
+      tasteOverrides: baseTaste,
+      gains: baseGains,
+      confidence: 0.5,
+      sampleCount: 1,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+  };
 }

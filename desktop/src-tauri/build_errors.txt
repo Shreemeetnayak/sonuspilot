@@ -1,0 +1,57 @@
+    Checking desktop v0.1.0 (C:\Users\KIIT0001\Desktop\SonusPilot\desktop\src-tauri)
+error[E0432]: unresolved import `windows::Win32::System::Variant`
+   --> src\services\audio_device.rs:8:29
+    |
+  8 | use windows::Win32::System::Variant::VT_LPWSTR;
+    |                             ^^^^^^^ could not find `Variant` in `System`
+    |
+note: found an item that was configured out
+   --> C:\Users\KIIT0001\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows-0.61.3\src\Windows\Win32\System\mod.rs:154:9
+    |
+153 | #[cfg(feature = "Win32_System_Variant")]
+    |       -------------------------------- the item is gated behind the `Win32_System_Variant` feature
+154 | pub mod Variant;
+    |         ^^^^^^^
+
+error[E0599]: no method named `Activate` found for struct `IMMDevice` in the current scope
+  --> src\services\loopback.rs:28:57
+   |
+28 |                 let audio_client: IAudioClient = device.Activate(CLSCTX_ALL, None).map_err(|e| e.to_string())?;
+   |                                                         ^^^^^^^^ method not found in `IMMDevice`
+
+error[E0599]: no method named `GetValue` found for struct `IPropertyStore` in the current scope
+  --> src\services\audio_device.rs:40:33
+   |
+40 |         let Ok(propvar) = store.GetValue(&key) else {
+   |                                 ^^^^^^^^ method not found in `IPropertyStore`
+
+error[E0599]: no method named `Activate` found for struct `IMMDevice` in the current scope
+  --> src\services\meter.rs:17:16
+   |
+17 |         device.Activate::<IAudioMeterInformation>(CLSCTX_ALL, None).ok()
+   |                ^^^^^^^^ method not found in `IMMDevice`
+
+warning: unused variable: `model`
+ --> src\services\eq_optimizer.rs:4:30
+  |
+4 | pub fn optimize_universal_eq(model: &mut EQModel, current_features: &[f32], target_features: &[f32]) -> Vec<f32> {
+  |                              ^^^^^ help: if this is intentional, prefix it with an underscore: `_model`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `current_features`
+ --> src\services\eq_optimizer.rs:4:51
+  |
+4 | pub fn optimize_universal_eq(model: &mut EQModel, current_features: &[f32], target_features: &[f32]) -> Vec<f32> {
+  |                                                   ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_features`
+
+warning: unused variable: `target_features`
+ --> src\services\eq_optimizer.rs:4:77
+  |
+4 | pub fn optimize_universal_eq(model: &mut EQModel, current_features: &[f32], target_features: &[f32]) -> Vec<f32> {
+  |                                                                             ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_target_features`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+warning: `desktop` (lib) generated 3 warnings
+error: could not compile `desktop` (lib) due to 4 previous errors; 3 warnings emitted

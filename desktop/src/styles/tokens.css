@@ -1,0 +1,366 @@
+/* SonusPilot design system — one place for every visual decision. */
+
+:root {
+  /* Surfaces: near-black to near-white, low chroma so the EQ curve is the
+     only saturated thing on screen. */
+  --bg-app: #0a0b0d;
+  --bg-surface: #101216;
+  --bg-raised: #16191e;
+  --bg-inset: #0d0f12;
+  --bg-hover: #1c2027;
+
+  --border-subtle: #23272e;
+  --border-strong: #333944;
+
+  --text-primary: #eef1f5;
+  --text-secondary: #9aa4b2;
+  --text-tertiary: #646e7c;
+  --text-inverse: #0a0b0d;
+
+  /* Semantic */
+  --accent: #4c9aff;
+  --accent-dim: #2d6cd4;
+  --ok: #3fbf7f;
+  --warn: #e0a33e;
+  --danger: #e5574f;
+  --boost: #4c9aff;
+  --cut: #e5574f;
+
+  /* Type scale — 11px is the floor; anything smaller is unreadable at 1080p */
+  --t-2xs: 10px;
+  --t-xs: 11px;
+  --t-sm: 12px;
+  --t-md: 13px;
+  --t-lg: 15px;
+  --t-xl: 19px;
+  --t-2xl: 25px;
+
+  /* Space */
+  --s-1: 4px;
+  --s-2: 6px;
+  --s-3: 8px;
+  --s-4: 12px;
+  --s-5: 16px;
+  --s-6: 22px;
+  --s-7: 30px;
+
+  --radius-sm: 4px;
+  --radius: 7px;
+  --radius-lg: 11px;
+
+  --t-fast: 110ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-normal: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout constants the responsive rules key off */
+  --topbar-h: 44px;
+  --bottombar-h: 46px;
+  --left-w: 264px;
+  --drawer-w: 380px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: var(--t-md);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────── */
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #47505e;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Shared primitives ──────────────────────────────────────────────── */
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card__label {
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.mono {
+  font-family: "JetBrains Mono", "Cascadia Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: var(--t-xs);
+  font-weight: 500;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pill--ok {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 32%, transparent);
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
+}
+.pill--warn {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+}
+.pill--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.dot--live {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04122b;
+  font-weight: 600;
+}
+.btn--primary:hover {
+  background: #62a9ff;
+  border-color: #62a9ff;
+}
+.btn--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.btn--sm {
+  padding: 4px 8px;
+  font-size: var(--t-xs);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.seg {
+  display: inline-flex;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.seg__btn {
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+.seg__btn:hover {
+  color: var(--text-primary);
+}
+.seg__btn[aria-pressed="true"],
+.seg__btn--active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field__label {
+  font-size: var(--t-xs);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.input,
+.select {
+  padding: 6px 9px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--t-sm);
+  width: 100%;
+}
+.input:focus,
+.select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%239aa4b2' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  padding-right: 26px;
+}
+
+.switch {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 100px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  transition: background var(--t-fast), border-color var(--t-fast);
+  flex: none;
+}
+.switch[aria-checked="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: transform var(--t-fast), background var(--t-fast);
+}
+.switch[aria-checked="true"]::after {
+  transform: translateX(14px);
+  background: #fff;
+}
+
+.empty {
+  color: var(--text-tertiary);
+  font-size: var(--t-sm);
+  font-style: italic;
+  padding: var(--s-3) 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

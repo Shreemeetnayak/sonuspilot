@@ -1,0 +1,6 @@
+{"ts":1790837533417,"cmd":"export ECC_GATEGUARD=off; npm run build","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"7f90a2e8387646f2c772bc5cef92580924ee5f3eef325c05688803994171879d"}
+{"ts":1790838058549,"cmd":"export ECC_GATEGUARD=off; cd desktop && npm test","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"06eebd3e0ee6605302be4afd27c80c3b8ff04a8b648ca45cfb5634d4e5fda47b"}
+{"ts":1790838566290,"cmd":"export ECC_GATEGUARD=off; npm test 2>&1","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"27696364f712f2b0fe321eb0dac87feedeae31f1019586a666e0745fcd6f54e7"}
+{"ts":1790839423639,"cmd":"export ECC_GATEGUARD=off; cd desktop && npm test","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"d40c7a68d95a34a193c313f3d56fcc2cfa145fb3e515de36c6cb31dff20102f3"}
+{"ts":1790842303868,"cmd":"export ECC_GATEGUARD=off; npm test","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"0f55488e008ae9d87593cd9edae0be7261b7bace4e2cc92b1718a258eac11531"}
+{"ts":1790842343692,"cmd":"npm run build","head":"c7dc34b30e2a208ef98722fe676fa62df1fa453b","tree":"0f55488e008ae9d87593cd9edae0be7261b7bace4e2cc92b1718a258eac11531"}
